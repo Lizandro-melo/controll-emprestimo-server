@@ -1,78 +1,141 @@
+import { Button } from "@/utils/front/components/ui/button";
+import LabelInput from "@/utils/front/components/ui/label-input";
+import { formatInputLogin } from "@/utils/front/lib/utils";
+import { ContextAlert } from "@/utils/front/provider/provider_alert";
+import { ContextLoading } from "@/utils/front/provider/provider_loading";
+import { register } from "@/utils/server/types";
+import axios from "axios";
+
 import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useContext, useState } from "react";
+import { useForm } from "react-hook-form";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+export default function Auth() {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+  const [registerBool, setRegisterBool] = useState<boolean>(false);
+  const { startLoading } = useContext(ContextLoading);
+  const { drop_alert } = useContext(ContextAlert);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<register>();
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+  const registrar_conta = async (data: register) => {
+    startLoading(
+      axios
+        .post("/api/auth/register", data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          drop_alert(response.data.type, response.data.result);
+          setRegisterBool(true);
+        })
+        .catch((e) => {
+          drop_alert(e.response.data.type, e.response.data.result);
+        })
+    );
+  };
 
-export default function Home() {
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black`}
+    <form
+      onSubmit={handleSubmit(registrar_conta)}
+      className="border shadow-2xl rounded-xl p-14 max-sm:px-5 max-sm:py-14 w-full flex justify-center items-center flex-col gap-10"
     >
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+      <div>
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+          src={"/assets/letreiro.png"}
+          width={250}
+          height={200}
+          alt="Logo"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the index.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+      </div>
+      {registerBool ? (
+        <span className="text-2xl">Bem vindo ao Controll - Emprestimo</span>
+      ) : (
+        <>
+          <div className="flex max-lg:flex-col w-full h-full ">
+            <div className="w-full h-full p-5 flex flex-col items-center gap-5 lg:items-end">
+              <LabelInput
+                className="w-full"
+                id="Nome Sobrenome"
+                {...register("nome_completo", { required: true })}
+              />
+              <LabelInput
+                className="w-full"
+                id="CPF"
+                onInput={formatInputLogin}
+                {...register("num_cpf", { required: true })}
+              />
+              <LabelInput
+                className="w-full"
+                id="Num. Celular"
+                type="tel"
+                {...register("num_cel", { required: true, maxLength: 11 })}
+              />
+              <LabelInput
+                className="w-full"
+                id="E-mail"
+                type="email"
+                {...register("correio_eletronico", { required: true })}
+              />
+              <LabelInput
+                className="w-full"
+                id="Data de nascimento"
+                type="date"
+                {...register("data_nascimento", { required: true })}
+              />
+            </div>
+            <div className="w-full h-full p-5 flex flex-col items-center gap-5 lg:items-start">
+              <LabelInput
+                className="w-full"
+                id="CEP"
+                {...register("codigo_postal", { required: true, maxLength: 8 })}
+              />
+              <LabelInput
+                className="w-full"
+                id="Numero residencial"
+                {...register("numero_residencial", {
+                  required: true,
+                  maxLength: 4,
+                })}
+              />
+              <LabelInput
+                className="w-full"
+                id="Senha"
+                type="password"
+                {...register("senha", { required: true, minLength: 8 })}
+              />
+              <LabelInput
+                className="w-full"
+                id="Confirmar Senha"
+                type="password"
+                {...register("senha_confirmacao", {
+                  required: true,
+                  minLength: 8,
+                })}
+              />
+            </div>
+          </div>
+          <p className="text-red-400">
+            {errors && "Todos os campos são obrigatorios"}
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs/pages/getting-started?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+          <p className="text-red-400">
+            {(errors.senha || errors.senha_confirmacao) &&
+              "A senha tem que ter no mínimo 8 caracteres"}
+          </p>
+          <div>
+            <Button type="submit" className="px-10 text-sm cursor-pointer">
+              Registrar
+            </Button>
+          </div>
+        </>
+      )}
+    </form>
   );
 }

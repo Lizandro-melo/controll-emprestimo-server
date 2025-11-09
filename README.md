@@ -1,40 +1,111 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 💸 Sistema de Controle de Empréstimos - lado do servidor
 
-## Getting Started
+Um sistema web simples e eficiente desenvolvido com **Next.js**, **TypeScript** e **Prisma ORM** para **gerenciar empréstimos, clientes e pagamentos**.  
+O foco é **controle financeiro pessoal ou de pequenos negócios**, com interface intuitiva e alertas automáticos de vencimento.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🧩 Funcionalidades Principais
+
+### 💰 Gestão de Empréstimos
+- Cadastro manual de empréstimos com:
+  - Nome do cliente
+  - Valor emprestado
+  - Data do empréstimo e data de vencimento
+  - Status de pagamento (em aberto, pago, vencido)
+- Atualização rápida do status de pagamento.
+- Histórico completo de empréstimos com filtros por cliente e data.
+
+### 📅 Alertas e Controle
+- **Avisos automáticos na interface** sobre:
+  - Empréstimos vencidos.
+  - Pagamentos próximos do vencimento.
+- Destaque visual para itens críticos (cores e ícones).
+- Estatísticas resumidas: total emprestado, recebido e pendente.
+
+### 👥 Clientes
+- Cadastro e visualização de clientes.
+- Histórico de empréstimos vinculados a cada cliente.
+- Busca inteligente e ordenação alfabética.
+
+### 🧭 Estrutura de Navegação
+- Layout moderno e responsivo com barra lateral.
+- Páginas principais:
+  - `/auth` – Login do sistema.
+  - `/` – Dashboard principal.
+  - `/emprestimos` – Lista e cadastro de empréstimos.
+  - `/clientes` – Gestão de clientes.
+
+---
+
+## ⚙️ Tecnologias Utilizadas
+
+| Categoria | Tecnologias |
+|------------|--------------|
+| Framework | **Next.js 14**, **React 18** |
+| Linguagem | **TypeScript** |
+| Banco de Dados | **Prisma ORM** |
+| Estilização | **TailwindCSS**, **Shadcn UI** |
+| Autenticação | **Cookies (nookies)** |
+| Formulários | **React Hook Form** |
+| Ícones | **React Icons** |
+| Tipografia | **Google Fonts (Montserrat)** |
+
+---
+
+## 🏗️ Estrutura do Projeto
+
+```
+📁 src
+├── components/
+│   ├── ui/
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   ├── label-input.tsx
+│   │   ├── dialog.tsx
+│   │   ├── nav.tsx
+│   │   ├── card.tsx
+│   │   └── response-alert.tsx
+│
+├── pages/
+│   ├── index.tsx                 # Dashboard principal
+│   ├── emprestimos/index.tsx     # Lista e cadastro de empréstimos
+│   ├── clientes/index.tsx        # Gestão de clientes
+│   └── auth/
+│       └── index.tsx             # Tela de login
+│
+├── prisma/
+│   └── schema.prisma             # Modelos e schema do banco
+│
+├── provider/
+│   └── provider_auth.tsx         # Contexto de autenticação
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## 🚀 Como Executar o Projeto
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+### 1️⃣ Clonar o repositório
+```bash
+git clone https://github.com/Lizandro-melo/controll-emprestimo.git
+```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+### 2️⃣ Instalar dependências
+```bash
+pnpm i
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3️⃣ Configurar o banco de dados
+Edite o arquivo `.env` com sua URL do banco de dados e execute:
+```bash
+pnpx prisma migrate dev
+```
 
-## Learn More
+### 4️⃣ Rodar o projeto
+```bash
+pnpm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Acesse em: [http://localhost:3000](http://localhost:3000)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+---
