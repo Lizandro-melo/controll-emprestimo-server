@@ -1,4 +1,4 @@
-import { auth, Tipo_User } from "@prisma/client";
+import { auth, emprestimo, Status_divida, Tipo_User } from "@prisma/client";
 import { PRISMA } from "../db";
 import moment from "moment-timezone";
 import { DAYS_EXPIRE_SESSION } from "../constants";
@@ -136,3 +136,56 @@ export const consult_cliente_by_cpf = async (
     throw Error("Já existe um cliente com esse número de CPF");
 };
 
+export const consult_uuid_cliente_by_uuid_cliente = async (
+  uuid_cliente: string,
+  uuid_operador: string
+): Promise<string> => {
+  return await PRISMA.cliente
+    .findUniqueOrThrow({
+      where: {
+        uuid: uuid_cliente,
+        uuid_operador: uuid_operador,
+      },
+    })
+    .then((c) => c?.uuid)
+    .catch((e) => {
+      throw new Error("Cliente ilegível");
+    });
+};
+
+export const consult_emprestimos_by_uuid = async (
+  uuid: string,
+  status: string
+): Promise<emprestimo[] | undefined> => {
+  return await PRISMA.operador
+    .findUnique({
+      where: {
+        uuid: uuid,
+      },
+      include: {
+        emprestimos: true,
+      },
+    })
+    .then((o) => o?.emprestimos.filter((e) => e.status === status));
+};
+
+export const consult_emprestimos_cliente_by_uuid = async (
+  uuid: string,
+  uuid_cliente: string,
+  status: string
+): Promise<emprestimo[] | undefined> => {
+  return await PRISMA.operador
+    .findUnique({
+      where: {
+        uuid: uuid,
+      },
+      include: {
+        emprestimos: true,
+      },
+    })
+    .then((o) =>
+      o?.emprestimos.filter(
+        (e) => e.status === status && e.uuid_cliente === uuid_cliente
+      )
+    );
+};

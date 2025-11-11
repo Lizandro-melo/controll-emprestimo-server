@@ -186,6 +186,7 @@ model emprestimo {
   valor_emprestimo Float
   tipo             Tipo_cobranca
   data_emprestimo  DateTime      @default(now())
+  data_final       DateTime
   valor_receber    Float
   observacao       String?
   status           Status_divida @default(PENDENTE)
@@ -197,12 +198,15 @@ model emprestimo {
 }
 
 model pagamento {
-  uuid            String         @id @unique @default(uuid())
-  valor_pago      Float
+  uuid            String          @id @unique @default(uuid())
+  valor_pago      Float?
+  valor_previsto  Float
   uuid_emprestimo String
-  tipo_pagamento  Tipo_pagamento
-  data_pagamento  DateTime       @default(now())
+  tipo_pagamento  Tipo_pagamento?
+  data_pagamento  DateTime?
+  data_vencimento DateTime
   comprovante     String?
   observacao      String?
-  emprestimo      emprestimo     @relation(fields: [uuid_emprestimo], references: [uuid])
+  status          Status_divida   @default(PENDENTE)
+  emprestimo      emprestimo      @relation(fields: [uuid_emprestimo], references: [uuid])
 }

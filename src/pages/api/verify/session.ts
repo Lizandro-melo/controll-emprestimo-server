@@ -15,7 +15,7 @@ export default async function session(
     const role = await consult_tipo_user_by_uuid(uuid!);
     switch (role) {
       case "OPERADOR": {
-        res.status(200).json({ result: "/", type: "sucess" });
+        res.status(200).json({ result: "/operadorui", type: "sucess" });
       }
     }
   } catch {

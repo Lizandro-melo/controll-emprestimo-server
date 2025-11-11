@@ -124,11 +124,41 @@ export const create_emprestimo = async (
   uuid_cliente: string,
   uuid_operador: string
 ) => {
-  await PRISMA.emprestimo.create({
+  const emprestimo = await PRISMA.emprestimo.create({
     data: {
       ...emprestimo_props,
       uuid_operador: uuid_operador,
       uuid_cliente: uuid_cliente,
+      data_final: moment(emprestimo_props.data_final)
+        .tz("America/Sao_Paulo")
+        .toDate(),
     },
   });
+
+  switch (emprestimo_props.tipo) {
+    case "MENSAL":
+      const diferenca_mes = moment(emprestimo_props.data_final).diff(
+        moment(emprestimo_props.data_emprestimo),
+        "M"
+      );
+      const valor_previsto = emprestimo.valor_receber / diferenca_mes;
+
+      for (let i = 0; i < diferenca_mes; i++) {
+        const vencimento = moment()
+          .tz("America/Sao_Paulo")
+          .add(i, "months")
+          .toDate();
+
+        await PRISMA.pagamento.create({
+          data: {
+            uuid_emprestimo: emprestimo.uuid,
+            data_vencimento: vencimento,
+            valor_previsto: valor_previsto,
+          },
+        });
+      }
+      break;
+    default:
+      throw new Error("Plano de pagamento inválido.");
+  }
 };

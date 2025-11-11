@@ -28,6 +28,6 @@ export type create_cliente_props = {
 };
 
 export type create_emprestimo_props = {
-  emprestimo_props: emprestimo;
+  emprestimo: emprestimo;
   uuid_cliente: string;
 };
