@@ -9,7 +9,8 @@ import { log } from "console";
 import { create_emprestimo_props, response } from "@/utils/server/types";
 import { create_emprestimo } from "@/utils/server/service/generate";
 import moment from "moment-timezone";
-import { cors } from "@/pages/api/_middlewares/cors";
+import cors from "@/pages/api/_middlewares/cors";
+
 
 export default async function emprestimoApiFind(
   req: NextApiRequest,

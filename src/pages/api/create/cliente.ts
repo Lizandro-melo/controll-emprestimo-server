@@ -5,11 +5,11 @@ import {
 } from "@/utils/server/service/consult";
 
 import { log } from "console";
-import { cors } from "../_middlewares/cors";
 import { create_cliente_props, response } from "@/utils/server/types";
 import { cliente } from "@prisma/client";
 import { isCPF } from "validation-br";
 import { create_cliente } from "@/utils/server/service/generate";
+import cors from "../_middlewares/cors";
 
 export default async function clienteApiCreate(
   req: NextApiRequest,
