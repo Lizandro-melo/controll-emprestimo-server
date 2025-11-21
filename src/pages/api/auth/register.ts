@@ -1,24 +1,22 @@
-import { ASSAS } from "@/utils/server/constants";
-import { validation_token_register } from "@/utils/server/service/consult";
-import {
-  create_operador,
-  disable_token_register,
-} from "@/utils/server/service/generate";
-import { register, response } from "@/utils/server/types";
+
 import { log } from "console";
 import moment from "moment-timezone";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { isCPF } from "validation-br";
 import z, { success } from "zod";
+import { cors } from "../_middlewares/cors";
+import { register, response } from "@/domain/entities";
+import { register_operador } from "@/domain/usecases/auth";
 
-export default async function handler(
+export default async function registerApi(
   req: NextApiRequest,
-  res: NextApiResponse<response>
+  res: NextApiResponse<response>,
+  register: register,
 ) {
+  if (cors(req, res, "PUT")) return;
   try {
     const token = req.headers.authorization?.replace("Bearer ", "");
-    await validation_token_register(token!);
-    const schemaLogin = z.object({
+    const schemaRegister = z.object({
       nome_completo: z.string(),
       num_cpf: z.string(),
       num_cel: z.string(),
@@ -29,21 +27,21 @@ export default async function handler(
       senha: z.string(),
       senha_confirmacao: z.string(),
     });
-    const { ...props } = z.parse(schemaLogin, req.body);
-    props.num_cpf = props.num_cpf.replaceAll(".", "").replace("-", "");
-    if (props.senha !== props.senha_confirmacao)
-      res.status(400).json({ m: "As senhas então diferentes!", type: "error" });
-
-    if (!isCPF(props.num_cpf))
-      res.status(400).json({ m: "CPF Invalido", type: "error" });
-    await create_operador(props);
-    await disable_token_register(token!);
-    res
-      .status(200)
-      .json({ m: "Você foi registrado com sucesso!", type: "sucess" });
+    try {
+      register = z.parse(schemaRegister, req.body);
+    } catch {
+      throw new Error("Formulário invalido!");
+    }
+    await register_operador({ token: token!, register: register });
+    res.status(200).json({
+      result: null,
+      m: "Você foi registrado com sucesso!",
+      type: "sucess",
+    });
   } catch (e: any) {
     console.error(e.message, moment.tz("America/Sao_Paulo").toDate());
     res.status(500).json({
+      result: null,
       m: e.message,
       type: "error",
     });

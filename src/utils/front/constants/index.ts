@@ -1,1 +1,0 @@
-export const NAME_COOKIE_SESSION = "session_uuid_controll";
