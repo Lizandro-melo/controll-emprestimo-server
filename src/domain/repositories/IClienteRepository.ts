@@ -22,4 +22,10 @@ export default interface IClienteRepository {
     uuid_cliente: string;
     uuid_auth: string;
   }): Promise<cliente_props>;
+  update_cliente_by_cliente_props({
+    ...props
+  }: {
+    cliente_props: cliente_props;
+    uuid_auth: string;
+  }): Promise<void>;
 }

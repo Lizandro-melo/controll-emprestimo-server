@@ -46,3 +46,18 @@ export async function findCliente({
     uuid_cliente: props.uuid_cliente,
   });
 }
+
+export async function updateCliente({
+  ...props
+}: {
+  cliente_props: cliente_props;
+  session: string;
+}): Promise<void> {
+  const { uuid_auth } = await auth_repository.consult_uuid_auth_by_session({
+    session: props.session,
+  });
+  await cliente_repository.update_cliente_by_cliente_props({
+    cliente_props: props.cliente_props,
+    uuid_auth,
+  });
+}

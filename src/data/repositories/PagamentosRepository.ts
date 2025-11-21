@@ -70,12 +70,19 @@ export default class PagamentoRepository implements IPagamentoRepository {
           (acc, p) => acc + (p.valor_pago || 0),
           0
         );
+        const emprestimo = await prisma.emprestimo.findUnique({
+          where: {
+            uuid: update_pagamento_props.uuid_emprestimo,
+          },
+        });
         await prisma.emprestimo.update({
           where: {
             uuid: update_pagamento_props.uuid_emprestimo,
           },
           data: {
             valor_recebido: valor_recebido,
+            status:
+              emprestimo?.valor_receber! < valor_recebido ? "PAGO" : "PENDENTE",
           },
         });
       },

@@ -1,9 +1,57 @@
 import { cliente_props, create_cliente, find_cliente } from "@/domain/entities";
 import IClienteRepository from "@/domain/repositories/IClienteRepository";
 import { Prisma_auth, Prisma_logic } from "@/infra/db";
+import { log } from "console";
 import moment from "moment-timezone";
 
 export default class ClienteRepository implements IClienteRepository {
+  async update_cliente_by_cliente_props({
+    ...props
+  }: {
+    cliente_props: cliente_props;
+    uuid_auth: string;
+  }): Promise<void> {
+    try {
+      await Prisma_logic.$transaction(async (prisma) => {
+        await prisma.cliente.update({
+          where: {
+            uuid: props.cliente_props.cliente.uuid,
+            uuid_operador: props.uuid_auth,
+          },
+          data: {
+            ...props.cliente_props.cliente,
+            data_nascimento: props.cliente_props.cliente.data_nascimento
+              ? moment(props.cliente_props.cliente.data_nascimento).toDate()
+              : null,
+          },
+          omit: {
+            num_cpf: true,
+          },
+        });
+        await prisma.celular_cliente.deleteMany({
+          where: { uuid_cliente: props.cliente_props.cliente.uuid },
+        });
+
+        await prisma.celular_cliente.createMany({
+          data: props.cliente_props.celulares
+            .filter((c) => c.status)
+            .map(({ id, ...rest }) => rest),
+        });
+
+        await prisma.endereco_cliente.deleteMany({
+          where: { uuid_cliente: props.cliente_props.cliente.uuid },
+        });
+
+        await prisma.endereco_cliente.createMany({
+          data: props.cliente_props.enderecos
+            .filter((c) => c.status)
+            .map(({ id, ...rest }) => rest),
+        });
+      });
+    } catch {
+      throw new Error("Não foi possivel atuaizar as informações desse cliente");
+    }
+  }
   async consult_cliente_by_uuid_cliente({
     ...props
   }: {
