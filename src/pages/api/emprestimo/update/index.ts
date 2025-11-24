@@ -3,23 +3,26 @@ import cors from "@/presentation/lib/middlewares/cors";
 import { response } from "@/domain/entities";
 import { emprestimo } from "@prisma/logic";
 import { createCliente } from "@/domain/usecases/cliente";
-import { createEmprestimo } from "@/domain/usecases/emprestimo";
+import {
+  createEmprestimo,
+  updateEmprestimo,
+} from "@/domain/usecases/emprestimo";
 
-export default async function emprestimoApiCreate(
+export default async function emprestimoApiUpdate(
   req: NextApiRequest,
   res: NextApiResponse<response>
 ) {
-  if (cors(req, res, "POST")) return;
+  if (cors(req, res, "PUT")) return;
   try {
     const session = req.headers.authorization?.replace("Bearer ", "");
     const emprestimo_props: emprestimo = req.body;
-    await createEmprestimo({
+    await updateEmprestimo({
       session: session!,
       emprestimo_props: emprestimo_props,
     });
     res
       .status(200)
-      .json({ m: "Emprestimo criado com sucesso!", type: "sucess" });
+      .json({ m: "Emprestimo atualizado com sucesso!", type: "sucess" });
   } catch (e: any) {
     res.status(403).json({ m: e.message, type: "error" });
   }

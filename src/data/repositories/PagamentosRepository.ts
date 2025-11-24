@@ -1,10 +1,30 @@
-import { update_pagamento_props } from "@/domain/entities";
+import { pagamento_props } from "@/domain/entities";
 import IPagamentoRepository from "@/domain/repositories/IPagamentoRepository";
 import { Prisma_logic } from "@/infra/db";
-import { pagamento } from "@prisma/logic/client";
+import { pagamento, Tipo_pagamento } from "@prisma/logic/client";
 import moment from "moment";
 
 export default class PagamentoRepository implements IPagamentoRepository {
+  async consult_pagamento_by_uuid_pagamento({
+    ...props
+  }: {
+    uuid_pagamento: string;
+  }): Promise<pagamento_props> {
+    const pagamento = await Prisma_logic.pagamento.findUnique({
+      where: {
+        uuid: props.uuid_pagamento,
+        delete: false,
+      },
+    });
+    return {
+      data_pagamento: pagamento?.data_pagamento?.toISOString() ?? "",
+      observacao: pagamento?.observacao ?? "",
+      tipo_pagamento: pagamento?.tipo_pagamento ?? "",
+      uuid_emprestimo: pagamento?.uuid_emprestimo ?? "",
+      uuid_pagamento: pagamento?.uuid ?? "",
+      valor_pago: pagamento?.valor_pago ?? null,
+    };
+  }
   async consult_pagamento_by_uuid_auth_and_page({
     ...props
   }: {
@@ -16,6 +36,7 @@ export default class PagamentoRepository implements IPagamentoRepository {
     return await Prisma_logic.pagamento.findMany({
       where: {
         uuid_operador: props.uuid_auth,
+        delete: false,
       },
       take: 10,
       skip: skips,
@@ -32,36 +53,35 @@ export default class PagamentoRepository implements IPagamentoRepository {
     return await Prisma_logic.pagamento.findMany({
       where: {
         uuid_operador: props.uuid_auth,
+        delete: false,
       },
     });
   }
   async lancar_pagamento({
-    update_pagamento_props,
+    pagamento_props,
   }: {
-    update_pagamento_props: update_pagamento_props;
+    pagamento_props: pagamento_props;
   }): Promise<void> {
     await Prisma_logic.$transaction(
       async (prisma) => {
         await prisma.pagamento.update({
           where: {
-            uuid: update_pagamento_props.uuid_pagamento,
+            uuid: pagamento_props.uuid_pagamento,
           },
           data: {
-            comprovante: update_pagamento_props.comprovante,
-            data_pagamento: moment(
-              update_pagamento_props.data_pagamento
-            ).toDate(),
-            observacao: update_pagamento_props.observacao,
+            comprovante: pagamento_props.comprovante,
+            data_pagamento: moment(pagamento_props.data_pagamento).toDate(),
+            observacao: pagamento_props.observacao,
             valor_pago: parseFloat(
-              update_pagamento_props.valor_pago.toString().replace(",", ".")
+              pagamento_props.valor_pago!.toString().replace(",", ".")
             ),
-            tipo_pagamento: update_pagamento_props.tipo_pagamento,
+            tipo_pagamento: pagamento_props.tipo_pagamento as Tipo_pagamento,
             status: "PAGO",
           },
         });
         const pagamentos_pagos = await prisma.pagamento.findMany({
           where: {
-            uuid_emprestimo: update_pagamento_props.uuid_emprestimo,
+            uuid_emprestimo: pagamento_props.uuid_emprestimo,
             status: "PAGO",
           },
         });
@@ -72,12 +92,12 @@ export default class PagamentoRepository implements IPagamentoRepository {
         );
         const emprestimo = await prisma.emprestimo.findUnique({
           where: {
-            uuid: update_pagamento_props.uuid_emprestimo,
+            uuid: pagamento_props.uuid_emprestimo,
           },
         });
         await prisma.emprestimo.update({
           where: {
-            uuid: update_pagamento_props.uuid_emprestimo,
+            uuid: pagamento_props.uuid_emprestimo,
           },
           data: {
             valor_recebido: valor_recebido,

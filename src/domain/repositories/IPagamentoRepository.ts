@@ -1,11 +1,11 @@
-import { update_pagamento_props } from "../entities";
+import { pagamento_props } from "../entities";
 import { pagamento } from "@prisma/logic";
 
 export default interface IPagamentoRepository {
   lancar_pagamento({
-    update_pagamento_props,
+    pagamento_props,
   }: {
-    update_pagamento_props: update_pagamento_props;
+    pagamento_props: pagamento_props;
   }): Promise<void>;
   consult_all_pagamento_by_uuid({
     ...props
@@ -18,4 +18,9 @@ export default interface IPagamentoRepository {
     uuid_auth: string;
     page: number;
   }): Promise<pagamento[]>;
+  consult_pagamento_by_uuid_pagamento({
+    ...props
+  }: {
+    uuid_pagamento: string;
+  }): Promise<pagamento_props>;
 }

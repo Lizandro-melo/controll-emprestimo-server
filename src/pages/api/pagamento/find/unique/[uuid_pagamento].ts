@@ -2,22 +2,25 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import cors from "@/presentation/lib/middlewares/cors";
 import { response, pagamento_props } from "@/domain/entities";
 
-import { updatePagamento } from "@/domain/usecases/pagamento";
-import { log } from "console";
+import {
+  findPagamentoPage,
+  findUniquePagamento,
+  updatePagamento,
+} from "@/domain/usecases/pagamento";
 
-export default async function pagamentoApiUpdate(
+export default async function pagamentoApiFindPage(
   req: NextApiRequest,
   res: NextApiResponse<response>
 ) {
-  if (cors(req, res, "PUT")) return;
+  if (cors(req, res, "GET")) return;
   try {
     const session = req.headers.authorization?.replace("Bearer ", "");
-    const update_pagamento: pagamento_props = req.body;
-    await updatePagamento({
+    const uuid_pagamento = req.query.uuid_pagamento as string;
+    const pagamento = await findUniquePagamento({
       session: session!,
-      pagamento_props: update_pagamento,
+      uuid_pagamento: uuid_pagamento,
     });
-    res.status(200).json({ m: "Pagamento lançado!", type: "sucess" });
+    res.status(200).json({ result: pagamento, type: "sucess" });
   } catch (e: any) {
     res.status(403).json({ m: e.message, type: "error" });
   }

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { cors } from "../../_middlewares/cors";
+import cors from "@/presentation/lib/middlewares/cors";
 import { cliente_props, response } from "@/domain/entities";
 import { updateCliente } from "@/domain/usecases/cliente";
 

@@ -63,11 +63,13 @@ export default async function dashboard({
     const cliente = await Prisma_logic.cliente.findUnique({
       where: {
         uuid: p.uuid_cliente,
+        delete: false,
       },
     });
     const emprestimo = await Prisma_logic.emprestimo.findUnique({
       where: {
         uuid: p.uuid_emprestimo,
+        delete: false,
       },
     });
     pagamentos_mes_props.push({

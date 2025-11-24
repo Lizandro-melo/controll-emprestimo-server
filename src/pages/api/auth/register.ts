@@ -1,17 +1,16 @@
-
 import { log } from "console";
 import moment from "moment-timezone";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { isCPF } from "validation-br";
 import z, { success } from "zod";
-import { cors } from "../_middlewares/cors";
+
 import { register, response } from "@/domain/entities";
 import { register_operador } from "@/domain/usecases/auth";
+import cors from "@/presentation/lib/middlewares/cors";
 
 export default async function registerApi(
   req: NextApiRequest,
-  res: NextApiResponse<response>,
-  register: register,
+  res: NextApiResponse<response>
 ) {
   if (cors(req, res, "PUT")) return;
   try {
@@ -27,11 +26,9 @@ export default async function registerApi(
       senha: z.string(),
       senha_confirmacao: z.string(),
     });
-    try {
-      register = z.parse(schemaRegister, req.body);
-    } catch {
-      throw new Error("Formulário invalido!");
-    }
+
+    const register = z.parse(schemaRegister, req.body);
+
     await register_operador({ token: token!, register: register });
     res.status(200).json({
       result: null,

@@ -1,6 +1,7 @@
 import AuthRepository from "@/data/repositories/AuthRepository";
 import ClienteRepository from "@/data/repositories/ClienteRepository";
 import { cliente_props, create_cliente } from "@/domain/entities";
+import { cliente } from "@prisma/logic/client";
 import { isCPF } from "validation-br";
 
 const auth_repository = new AuthRepository();
@@ -59,5 +60,35 @@ export async function updateCliente({
   await cliente_repository.update_cliente_by_cliente_props({
     cliente_props: props.cliente_props,
     uuid_auth,
+  });
+}
+
+export async function findClientePage({
+  ...props
+}: {
+  session: string;
+  page: number;
+}): Promise<cliente[]> {
+  const { uuid_auth } = await auth_repository.consult_uuid_auth_by_session({
+    session: props.session,
+  });
+  return await cliente_repository.consult_clientes_by_uuid_auth_and_page({
+    uuid_auth,
+    page: props.page,
+  });
+}
+
+export async function deleteCliente({
+  ...props
+}: {
+  session: string;
+  uuid_cliente: string;
+}) {
+  const { uuid_auth } = await auth_repository.consult_uuid_auth_by_session({
+    session: props.session,
+  });
+  await cliente_repository.delete_cliente({
+    uuid_auth: uuid_auth,
+    uuid_cliente: props.uuid_cliente,
   });
 }

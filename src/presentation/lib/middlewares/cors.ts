@@ -1,9 +1,9 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextApiRequest, NextApiResponse } from "next";
 
-export function cors(
+export default function cors(
   req: NextApiRequest,
   res: NextApiResponse,
-  method: "POST" | "GET" | "PUT"
+  method: "POST" | "GET" | "PUT" | "DELETE"
 ) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
@@ -16,7 +16,7 @@ export function cors(
 
   if (req.method !== method) {
     res.status(405).end();
-    return false;
+    return true;
   }
 
   return false;

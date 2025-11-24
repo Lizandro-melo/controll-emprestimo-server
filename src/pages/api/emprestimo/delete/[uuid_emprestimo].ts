@@ -1,25 +1,27 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import cors from "@/presentation/lib/middlewares/cors";
+
 import { response, pagamento_props } from "@/domain/entities";
 
 import {
   findPagamentoPage,
+  findUniquePagamento,
   updatePagamento,
 } from "@/domain/usecases/pagamento";
-
-export default async function pagamentoApiFindPage(
+import { findEmprestimoUnique } from "@/domain/usecases/emprestimo";
+import cors from "@/presentation/lib/middlewares/cors";
+export default async function emprestimoApiFindUnique(
   req: NextApiRequest,
   res: NextApiResponse<response>
 ) {
-  if (cors(req, res, "GET")) return;
+  if (cors(req, res, "DELETE")) return;
   try {
     const session = req.headers.authorization?.replace("Bearer ", "");
-    const page = req.query.page as string;
-    const pagamentos = await findPagamentoPage({
+    const uuid_emprestimo = req.query.uuid_emprestimo as string;
+    const emprestimo = await findEmprestimoUnique({
       session: session!,
-      page: parseInt(page),
+      uuid_emprestimo: uuid_emprestimo!,
     });
-    res.status(200).json({ result: pagamentos, type: "sucess" });
+    res.status(200).json({ result: emprestimo, type: "sucess" });
   } catch (e: any) {
     res.status(403).json({ m: e.message, type: "error" });
   }

@@ -1,10 +1,67 @@
 import { cliente_props, create_cliente, find_cliente } from "@/domain/entities";
 import IClienteRepository from "@/domain/repositories/IClienteRepository";
 import { Prisma_auth, Prisma_logic } from "@/infra/db";
+import { cliente } from "@prisma/logic/client";
 import { log } from "console";
 import moment from "moment-timezone";
 
 export default class ClienteRepository implements IClienteRepository {
+  async delete_cliente({
+    ...props
+  }: {
+    uuid_cliente: string;
+    uuid_auth: string;
+  }): Promise<void> {
+    await Prisma_logic.$transaction(async (prisma) => {
+      const cliente = await prisma.cliente.update({
+        where: {
+          uuid_operador: props.uuid_auth,
+          uuid: props.uuid_cliente,
+        },
+        data: {
+          delete: true,
+        },
+      });
+      await prisma.emprestimo.updateMany({
+        where: {
+          uuid_operador: props.uuid_auth,
+          uuid_cliente: cliente.uuid,
+        },
+        data: {
+          delete: true,
+        },
+      });
+
+      await prisma.pagamento.updateMany({
+        where: {
+          uuid_cliente: cliente.uuid,
+        },
+        data: {
+          delete: true,
+        },
+      });
+    });
+  }
+  async consult_clientes_by_uuid_auth_and_page({
+    ...props
+  }: {
+    uuid_auth: string;
+    page: number;
+  }): Promise<cliente[]> {
+    const skips = (props.page - 1) * 10;
+
+    return await Prisma_logic.cliente.findMany({
+      where: {
+        uuid_operador: props.uuid_auth,
+        delete: false,
+      },
+      take: 10,
+      skip: skips,
+      orderBy: {
+        nome_completo: "asc",
+      },
+    });
+  }
   async update_cliente_by_cliente_props({
     ...props
   }: {
@@ -58,12 +115,17 @@ export default class ClienteRepository implements IClienteRepository {
     uuid_cliente: string;
     uuid_auth: string;
   }): Promise<cliente_props> {
-    const cliente = await Prisma_logic.cliente.findUnique({
-      where: {
-        uuid: props.uuid_cliente,
-        uuid_operador: props.uuid_auth,
-      },
-    });
+    const cliente = await Prisma_logic.cliente
+      .findUniqueOrThrow({
+        where: {
+          uuid: props.uuid_cliente,
+          uuid_operador: props.uuid_auth,
+          delete: false,
+        },
+      })
+      .catch(() => {
+        throw new Error("Cliente deletado");
+      });
     const celulares = await Prisma_logic.celular_cliente.findMany({
       where: {
         uuid_cliente: cliente?.uuid,
@@ -75,6 +137,12 @@ export default class ClienteRepository implements IClienteRepository {
         uuid_cliente: cliente?.uuid,
       },
     });
+    const emprestimos = await Prisma_logic.emprestimo.findMany({
+      where: {
+        delete: false,
+        uuid_cliente: cliente?.uuid,
+      },
+    });
     return {
       cliente: {
         ...cliente!,
@@ -82,6 +150,7 @@ export default class ClienteRepository implements IClienteRepository {
       },
       celulares: celulares ?? [],
       enderecos: enderecos ?? [],
+      emprestimos: emprestimos ?? [],
     };
   }
   async consult_cpf_cliente_by_uuid_cliente({

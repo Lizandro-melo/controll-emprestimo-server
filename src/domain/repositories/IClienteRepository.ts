@@ -28,4 +28,16 @@ export default interface IClienteRepository {
     cliente_props: cliente_props;
     uuid_auth: string;
   }): Promise<void>;
+  consult_clientes_by_uuid_auth_and_page({
+    ...props
+  }: {
+    uuid_auth: string;
+    page: number;
+  }): Promise<cliente[]>;
+  delete_cliente({
+    ...props
+  }: {
+    uuid_cliente: string;
+    uuid_auth: string;
+  }): Promise<void>;
 }

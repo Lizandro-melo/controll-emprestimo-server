@@ -100,6 +100,7 @@ model cliente {
   observacao         String?
   uuid_operador      String
   status             Boolean               @default(true)
+  delete             Boolean?               @default(false)
   celularClientes    celular_cliente[]
   enderecoClientes   endereco_cliente[]
   redeSocialClientes rede_social_cliente[]
@@ -145,7 +146,7 @@ model emprestimo {
   nome_emprestimo  String
   valor_emprestimo Float
   valor_receber    Float
-  valor_recebido   Float?
+  valor_recebido   Float?         @default(0)
   tipo             Tipo_cobranca
   data_emprestimo  DateTime      @default(now())
   data_final       DateTime
@@ -153,6 +154,7 @@ model emprestimo {
   status           Status_divida @default(PENDENTE)
   uuid_operador    String
   uuid_cliente     String
+  delete           Boolean?       @default(false)
   pagamentos       pagamento[]
   cliente          cliente       @relation(fields: [uuid_cliente], references: [uuid])
   operador         operador      @relation(fields: [uuid_operador], references: [uuid])
@@ -170,6 +172,7 @@ model pagamento {
   observacao      String?
   uuid_cliente    String
   uuid_operador   String
+  delete          Boolean?         @default(false)
 
   cliente    cliente       @relation(fields: [uuid_cliente], references: [uuid])
   operador   operador      @relation(fields: [uuid_operador], references: [uuid])

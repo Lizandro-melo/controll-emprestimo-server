@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { cors } from "../../_middlewares/cors";
+import cors from "@/presentation/lib/middlewares/cors";
 import { create_cliente, response } from "@/domain/entities";
 import { createCliente } from "@/domain/usecases/cliente";
 
@@ -13,7 +13,7 @@ export default async function clienteApiCreate(
     const create_cliente: create_cliente = req.body;
     await createCliente({ session: session!, create_cliente });
     res.status(200).json({ m: "Cliente criado com sucesso!", type: "sucess" });
-  } catch (e:any) {
+  } catch (e: any) {
     res.status(403).json({ m: e.message, type: "error" });
   }
 }

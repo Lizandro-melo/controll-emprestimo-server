@@ -1,8 +1,9 @@
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import { cors } from "../_middlewares/cors";
+
 import { session_consult } from "@/domain/usecases/auth";
 import { response } from "@/domain/entities";
+import cors from "@/presentation/lib/middlewares/cors";
 
 export default async function session(
   req: NextApiRequest,

@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import { create_cliente, response } from "@/domain/entities";
 import { createCliente } from "@/domain/usecases/cliente";
-import { cors } from "../_middlewares/cors";
+import cors from "@/presentation/lib/middlewares/cors";
 import dashboard from "@/domain/usecases/dashboard";
 
 export default async function DashApiFind(

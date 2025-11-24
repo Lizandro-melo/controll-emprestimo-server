@@ -3,6 +3,7 @@ import type {
   cliente,
   emprestimo,
   endereco_cliente,
+  pagamento,
   Status_divida,
   Tipo_pagamento,
 } from "@prisma/logic";
@@ -44,14 +45,14 @@ export type find_cliente = {
   veiculo_vinculado: boolean;
 }[];
 
-export type update_pagamento_props = {
+export type pagamento_props = {
   uuid_pagamento: string;
   uuid_emprestimo: string;
-  valor_pago: number;
-  tipo_pagamento: Tipo_pagamento;
-  data_pagamento: string;
+  valor_pago: number | null;
+  tipo_pagamento: Tipo_pagamento | "";
+  data_pagamento: string | "";
   comprovante?: string;
-  observacao: string;
+  observacao?: string;
 };
 
 export type dashboard_props = {
@@ -93,4 +94,10 @@ export type cliente_props = {
   };
   celulares: celular_cliente[];
   enderecos: endereco_cliente[];
+  emprestimos: emprestimo[];
+};
+
+export type emprestimo_find_props = {
+  emprestimo: emprestimo;
+  pagamentos: pagamento[];
 };
