@@ -143,6 +143,12 @@ export default class ClienteRepository implements IClienteRepository {
         uuid_cliente: cliente?.uuid,
       },
     });
+    const pagamentos = await Prisma_logic.pagamento.findMany({
+      where: {
+        delete: false,
+        uuid_cliente: cliente?.uuid,
+      },
+    });
     return {
       cliente: {
         ...cliente!,
@@ -151,6 +157,7 @@ export default class ClienteRepository implements IClienteRepository {
       celulares: celulares ?? [],
       enderecos: enderecos ?? [],
       emprestimos: emprestimos ?? [],
+      pagamentos: pagamentos ?? [],
     };
   }
   async consult_cpf_cliente_by_uuid_cliente({

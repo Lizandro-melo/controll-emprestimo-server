@@ -95,6 +95,7 @@ export type cliente_props = {
   celulares: celular_cliente[];
   enderecos: endereco_cliente[];
   emprestimos: emprestimo[];
+  pagamentos: pagamento[];
 };
 
 export type emprestimo_find_props = {
