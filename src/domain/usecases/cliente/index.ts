@@ -54,6 +54,8 @@ export async function updateCliente({
   cliente_props: cliente_props;
   session: string;
 }): Promise<void> {
+  if (!isCPF(props.cliente_props.cliente.num_cpf))
+    throw new Error("Numero de CPF invalido");
   const { uuid_auth } = await auth_repository.consult_uuid_auth_by_session({
     session: props.session,
   });
