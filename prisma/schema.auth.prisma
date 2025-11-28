@@ -4,8 +4,8 @@ generator client_auth {
 }
 
 datasource db_auth {
-  provider = "sqlite"
-  url      = "file:./auth.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL_AUTH")
 }
 
 enum Tipo_User {
