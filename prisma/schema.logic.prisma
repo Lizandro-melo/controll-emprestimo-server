@@ -8,10 +8,9 @@ generator client {
   provider = "prisma-client-js"
   output   = "../node_modules/@prisma/logic"
 }
-
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL_LOGIC")
+  provider = "sqlite"
+  url      = "file:./logic.db"
 }
 
 // // SISTEMA
