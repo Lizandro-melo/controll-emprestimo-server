@@ -15,19 +15,9 @@ export default async function registerApi(
   if (cors(req, res, "PUT")) return;
   try {
     const token = req.headers.authorization?.replace("Bearer ", "");
-    const schemaRegister = z.object({
-      nome_completo: z.string(),
-      num_cpf: z.string(),
-      num_cel: z.string(),
-      correio_eletronico: z.email(),
-      data_nascimento: z.string(),
-      codigo_postal: z.string(),
-      numero_residencial: z.string(),
-      senha: z.string(),
-      senha_confirmacao: z.string(),
-    });
+    console.log(token);
 
-    const register = z.parse(schemaRegister, req.body);
+    const register = req.body;
 
     await register_operador({ token: token!, register: register });
     res.status(200).json({

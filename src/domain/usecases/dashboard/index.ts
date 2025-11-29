@@ -57,6 +57,7 @@ export default async function dashboard({
     valor_recebido: number;
     data_emprestimo: Date;
     data_final: Date;
+    status: Status_divida;
   }[] = [];
 
   for (const p of pagamentos_previsto_mes) {
@@ -98,6 +99,7 @@ export default async function dashboard({
       valor_recebido: e.valor_recebido ?? 0,
       data_emprestimo: e.data_emprestimo,
       data_final: e.data_final,
+      status: e.status,
     });
   }
 

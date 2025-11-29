@@ -77,6 +77,7 @@ export type dashboard_props = {
     valor_recebido: number;
     data_emprestimo: Date;
     data_final: Date;
+    status: Status_divida;
   }[];
 };
 

@@ -27,7 +27,7 @@ export default function Auth() {
   const registrar_conta = async (data: register) => {
     startLoading(
       axios
-        .post("/api/auth/register", data, {
+        .put("/api/auth/register", data, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
