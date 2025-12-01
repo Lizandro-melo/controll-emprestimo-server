@@ -34,7 +34,7 @@ export default async function dashboard({
   );
 
   const pagamentos_previsto_mes = pagamentos.filter(
-    (p) => p.status != "PAGO" && moment(p.data_vencimento).isSame(moment(), "M")
+    (p) => moment(p.data_vencimento).isSame(moment(), "M")
   );
   const pagamentos_recebidos_mes = pagamentos.filter(
     (p) => p.status == "PAGO" && moment(p.data_pagamento).isSame(moment(), "M")
