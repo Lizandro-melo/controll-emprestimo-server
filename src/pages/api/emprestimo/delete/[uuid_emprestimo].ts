@@ -7,7 +7,7 @@ import {
   findUniquePagamento,
   updatePagamento,
 } from "@/domain/usecases/pagamento";
-import { findEmprestimoUnique } from "@/domain/usecases/emprestimo";
+import { deleteEmprestimo, findEmprestimoUnique } from "@/domain/usecases/emprestimo";
 import cors from "@/presentation/lib/middlewares/cors";
 export default async function emprestimoApiFindUnique(
   req: NextApiRequest,
@@ -17,11 +17,11 @@ export default async function emprestimoApiFindUnique(
   try {
     const session = req.headers.authorization?.replace("Bearer ", "");
     const uuid_emprestimo = req.query.uuid_emprestimo as string;
-    const emprestimo = await findEmprestimoUnique({
+    const emprestimo = await deleteEmprestimo({
       session: session!,
       uuid_emprestimo: uuid_emprestimo!,
     });
-    res.status(200).json({ result: emprestimo, type: "sucess" });
+    res.status(200).json({ m: "Emprestimo e pagamentos deletados com sucesso!", type: "sucess" });
   } catch (e: any) {
     res.status(403).json({ m: e.message, type: "error" });
   }
