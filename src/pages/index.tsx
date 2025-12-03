@@ -1,6 +1,8 @@
+// Código melhorado com estilização mais bonita usando Tailwind e UI mais limpa
 import { register } from "@/domain/entities";
 import { Button } from "@/presentation/components/ui/button";
 import LabelInput from "@/presentation/components/ui/label-input";
+import { validatePassword } from "@/presentation/components/ui/passwordValidator";
 import { formatInputLogin } from "@/presentation/lib/utils";
 import { ContextAlert } from "@/presentation/provider/provider_alert";
 import { ContextLoading } from "@/presentation/provider/provider_loading";
@@ -9,128 +11,132 @@ import axios from "axios";
 
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export default function Auth() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const [registerBool, setRegisterBool] = useState<boolean>(false);
+  const [registerBool, setRegisterBool] = useState(false);
   const { startLoading } = useContext(ContextLoading);
   const { drop_alert } = useContext(ContextAlert);
+
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
+    setError,
+    clearErrors
   } = useForm<register>();
+  const senha = watch("senha");
+const senhaConfirm = watch("senha_confirmacao");
 
   const registrar_conta = async (data: register) => {
-    startLoading(
-      axios
-        .put("/api/auth/register", data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          drop_alert(response.data.type, response.data.m);
-          setRegisterBool(true);
-        })
-        .catch((e) => {
-          drop_alert(e.response.data.type, e.response.data.m);
-        })
-    );
-  };
+  const { valid, errors: pwdErrors } = validatePassword(data.senha || "");
+  if (!valid) {
+    // marca o campo senha com erro e não envia
+    setError("senha", { type: "manual", message: pwdErrors.join(" • ") });
+    return;
+  }
+
+  // validar confirmação
+  if (data.senha !== data.senha_confirmacao) {
+    setError("senha_confirmacao", {
+      type: "manual",
+      message: "As senhas não coincidem",
+    });
+    return;
+  }
+
+  startLoading(
+    axios
+      .put("/api/auth/register", data, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        drop_alert(response.data.type, response.data.m);
+        setRegisterBool(true);
+      })
+      .catch((e) => {
+        drop_alert(e.response?.data?.type, e.response?.data?.m ?? "Erro");
+      })
+  );
+};
+
+
+useEffect(() => {
+  if (!errors.senha && senha) {
+    const { valid } = validatePassword(senha);
+    if (valid) clearErrors("senha");
+  }
+  if (errors.senha_confirmacao && senha === senhaConfirm) {
+    clearErrors("senha_confirmacao");
+  }
+}, [senha, senhaConfirm]);
 
   return (
     <form
       onSubmit={handleSubmit(registrar_conta)}
-      className="border shadow-2xl rounded-xl p-14 max-sm:px-5 max-sm:py-14 w-full flex justify-center items-center flex-col gap-10"
+      className="max-w-4xl mx-auto mt-10 bg-white shadow-2xl border rounded-2xl p-10 flex flex-col gap-10 animate-fadeIn"
     >
-      <div>
-        <Image
-          src={"/assets/letreiro.png"}
-          width={250}
-          height={200}
-          alt="Logo"
-        />
+      <div className="flex justify-center">
+        <Image src="/assets/letreiro.png" width={250} height={200} alt="Logo" />
       </div>
+
       {registerBool ? (
-        <span className="text-2xl">Bem vindo ao Controll</span>
+        <span className="text-3xl font-semibold text-center text-green-600 animate-fadeIn">
+          Bem vindo ao Controll 🎉
+        </span>
       ) : (
         <>
-          <div className="flex max-lg:flex-col w-full h-full ">
-            <div className="w-full h-full p-5 flex flex-col items-center gap-5 lg:items-end">
-              <LabelInput
-                className="w-full"
-                id="Nome Sobrenome"
-                {...register("nome_completo", { required: true })}
-              />
-              <LabelInput
-                className="w-full"
-                id="CPF"
-                onInput={formatInputLogin}
-                {...register("num_cpf", { required: true })}
-              />
-              <LabelInput
-                className="w-full"
-                id="Num. Celular"
-                type="tel"
-                {...register("num_cel", { required: true, maxLength: 11 })}
-              />
-              <LabelInput
-                className="w-full"
-                id="E-mail"
-                type="email"
-                {...register("correio_eletronico", { required: true })}
-              />
-              <LabelInput
-                className="w-full"
-                id="Data de nascimento"
-                type="date"
-                {...register("data_nascimento", { required: true })}
-              />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
+            <div className="flex flex-col gap-5">
+              <LabelInput className="w-full" id="Nome Sobrenome" {...register("nome_completo", { required: true })} />
+
+              <LabelInput className="w-full" id="CPF" onInput={formatInputLogin} {...register("num_cpf", { required: true })} />
+
+              <LabelInput className="w-full" id="Num. Celular" type="tel" {...register("num_cel", { required: true, maxLength: 11 })} />
+
+              <LabelInput className="w-full" id="E-mail" type="email" {...register("correio_eletronico", { required: true })} />
+
+              <LabelInput className="w-full" id="Data de nascimento" type="date" {...register("data_nascimento", { required: true })} />
             </div>
-            <div className="w-full h-full p-5 flex flex-col items-center gap-5 lg:items-start">
+
+            <div className="flex flex-col gap-5">
+              <LabelInput className="w-full" id="CEP" {...register("codigo_postal", { required: true, maxLength: 8 })} />
+
+              <LabelInput className="w-full" id="Numero residencial" {...register("numero_residencial", { required: true, maxLength: 4 })} />
+
               <LabelInput
-                className="w-full"
-                id="CEP"
-                {...register("codigo_postal", { required: true, maxLength: 8 })}
-              />
-              <LabelInput
-                className="w-full"
-                id="Numero residencial"
-                {...register("numero_residencial", {
-                  required: true,
-                  maxLength: 4,
-                })}
-              />
-              <LabelInput
-                className="w-full"
-                id="Senha"
-                type="password"
-                {...register("senha", { required: true, minLength: 8 })}
-              />
-              <LabelInput
-                className="w-full"
-                id="Confirmar Senha"
-                type="password"
-                {...register("senha_confirmacao", {
-                  required: true,
-                  minLength: 8,
-                })}
-              />
+  className="w-full"
+  id="Senha"
+  type="password"
+  {...register("senha", { required: true })}
+ />
+{errors.senha && (
+  <p className="text-sm text-red-500 mt-1">{errors.senha.message}</p>
+)}
+
+<LabelInput
+  className="w-full"
+  id="Confirmar Senha"
+  type="password"
+  {...register("senha_confirmacao", { required: true })}
+/>
+{errors.senha_confirmacao && (
+  <p className="text-sm text-red-500 mt-1">{errors.senha_confirmacao.message}</p>
+)}
             </div>
           </div>
-          <p className="text-red-400">
-            {errors && "Todos os campos são obrigatorios"}
-          </p>
-          <p className="text-red-400">
-            {(errors.senha || errors.senha_confirmacao) &&
-              "A senha tem que ter no mínimo 8 caracteres"}
-          </p>
-          <div>
-            <Button type="submit" className="px-10 text-sm cursor-pointer">
+ 
+          {errors && (
+            <p className="text-red-500 text-center font-semibold">Todos os campos são obrigatórios</p>
+          )}
+
+          <div className="flex justify-center">
+            <Button type="submit" className="px-10 text-sm cursor-pointer rounded-xl">
               Registrar
             </Button>
           </div>

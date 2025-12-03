@@ -51,9 +51,9 @@ export const PART_TYPES = [
 ];
 
 export const formatInputLogin = (e: FormEvent<HTMLInputElement>) => {
-  // e.currentTarget.value = e.currentTarget.value
-  //   .replace(/\D/g, "")
-  //   .slice(0, 11);
+ e.currentTarget.value = e.currentTarget.value
+     .replace(/\D/g, "")
+    .slice(0, 11);
   if (e.currentTarget.value.length <= 3)
     e.currentTarget.value = e.currentTarget.value;
   if (e.currentTarget.value.length <= 6)
