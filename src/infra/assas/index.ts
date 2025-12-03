@@ -57,7 +57,7 @@ export default class Assas {
           customer: id_cliente,
           value: 50,
           nextDueDate: moment().tz("America/Sao_Paulo").add(1, "M").toDate(),
-          description: "Assinatura do app Controll - Veiculos",
+          description: "Assinatura do app Controll - Emprestimo",
         },
         {
           headers: this.headers,
