@@ -169,7 +169,7 @@ model pagamento {
   tipo_pagamento  Tipo_pagamento?
   data_pagamento  DateTime?
   data_vencimento DateTime
-  comprovante     String?
+  comprovante     Bytes?
   observacao      String?
   uuid_cliente    String
   uuid_operador   String

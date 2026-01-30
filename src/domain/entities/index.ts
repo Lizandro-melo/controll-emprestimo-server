@@ -47,6 +47,17 @@ export type create_emprestimo_props = {
   quantidade_parcelas: number;
 };
 
+export type update_emprestimo_props = {
+  uuid: string;
+  nome_emprestimo: string;
+  valor_emprestimo: number;
+  valor_receber: number;
+  tipo: Tipo_cobranca;
+  data_emprestimo: Date | string;
+  observacao?: string;
+  quantidade_parcelas?: number;
+};
+
 export type find_cliente = {
   nome_completo: string;
   num_cpf: string;
@@ -63,7 +74,7 @@ export type pagamento_props = {
   valor_pago: number | null;
   tipo_pagamento: Tipo_pagamento | "";
   data_pagamento: string | "";
-  comprovante?: string;
+  comprovante?: string | null;
   observacao?: string;
 };
 

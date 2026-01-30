@@ -1,6 +1,10 @@
 import AuthRepository from "@/data/repositories/AuthRepository";
 import EmprestimoRepository from "@/data/repositories/EmprestimoRepository";
-import { create_emprestimo_props, emprestimo_find_props } from "@/domain/entities";
+import {
+  create_emprestimo_props,
+  emprestimo_find_props,
+  update_emprestimo_props,
+} from "@/domain/entities";
 import { emprestimo } from "@prisma/logic";
 
 const auth_repository = new AuthRepository();
@@ -56,7 +60,7 @@ export async function updateEmprestimo({
   ...props
 }: {
   session: string;
-  emprestimo_props: emprestimo;
+  emprestimo_props: update_emprestimo_props;
 }) {
   const { uuid_auth } = await auth_repository.consult_uuid_auth_by_session({
     session: props.session,

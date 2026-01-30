@@ -1,4 +1,8 @@
-import { create_emprestimo_props, emprestimo_find_props } from "@/domain/entities";
+import {
+  create_emprestimo_props,
+  emprestimo_find_props,
+  update_emprestimo_props,
+} from "@/domain/entities";
 import IEmprestimoRepository from "@/domain/repositories/IEmprestimoRepository";
 import { Prisma_logic } from "@/infra/db";
 import { emprestimo, pagamento } from "@prisma/logic";
@@ -174,7 +178,7 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
     ...props
   }: {
     uuid_auth: string;
-    emprestimo_props: emprestimo;
+    emprestimo_props: update_emprestimo_props;
   }): Promise<void> {
     await Prisma_logic.$transaction(
       async (prisma) => {
@@ -185,36 +189,51 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
         },
       });
 
+      const { quantidade_parcelas, ...emprestimoBase } = props.emprestimo_props;
+      const dataEmprestimo = moment(emprestimoBase.data_emprestimo)
+        .tz("America/Sao_Paulo")
+        .toDate();
+      const quantidade = quantidade_parcelas
+        ? Number(quantidade_parcelas)
+        : undefined;
+
+      let dataFinalToUse = emprestimo_consult?.data_final;
+      let vencimentos: Date[] | null = null;
+      let quantidadeFinal = quantidade;
+
+      if (quantidade) {
+        const parcelasInfo = this.getParcelasByQuantidade({
+          tipo: emprestimoBase.tipo,
+          data_emprestimo: dataEmprestimo,
+          quantidade,
+        });
+        dataFinalToUse = parcelasInfo.data_final;
+        vencimentos = parcelasInfo.vencimentos;
+      }
+
       const consulta =
-        !moment(emprestimo_consult?.data_emprestimo).isSame(
-          props.emprestimo_props.data_emprestimo
-        ) ||
-        !moment(emprestimo_consult?.data_final).isSame(
-          props.emprestimo_props.data_final
-        ) ||
+        !!quantidade ||
+        !moment(emprestimo_consult?.data_emprestimo).isSame(dataEmprestimo) ||
+        emprestimo_consult?.tipo !== emprestimoBase.tipo ||
         emprestimo_consult?.valor_receber !==
-          parseFloat((props.emprestimo_props.valor_receber ?? 0).toString());
+          parseFloat((emprestimoBase.valor_receber ?? 0).toString());
 
       const emprestimo = await prisma.emprestimo.update({
         where: {
-          uuid: props.emprestimo_props.uuid,
+          uuid: emprestimoBase.uuid,
           uuid_operador: props.uuid_auth,
         },
         data: {
-          ...props.emprestimo_props,
+          ...emprestimoBase,
           valor_emprestimo: parseFloat(
-            (props.emprestimo_props.valor_emprestimo ?? 0).toString()
+            (emprestimoBase.valor_emprestimo ?? 0).toString()
           ),
           valor_receber: parseFloat(
-            (props.emprestimo_props.valor_receber ?? 0).toString()
+            (emprestimoBase.valor_receber ?? 0).toString()
           ),
           valor_recebido: consulta ? 0 : emprestimo_consult.valor_recebido,
-          data_final: moment(props.emprestimo_props.data_final)
-            .tz("America/Sao_Paulo")
-            .toDate(),
-          data_emprestimo: moment(props.emprestimo_props.data_emprestimo)
-            .tz("America/Sao_Paulo")
-            .toDate(),
+          data_final: dataFinalToUse,
+          data_emprestimo: dataEmprestimo,
         },
         omit: {
           valor_recebido: true,
@@ -222,13 +241,18 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
       });
 
       if (consulta) {
-        const { quantidade, vencimentos } = this.getParcelas({
-          tipo: emprestimo.tipo,
-          data_emprestimo: emprestimo.data_emprestimo,
-          data_final: emprestimo.data_final,
-        });
+        if (!vencimentos) {
+          const parcelasInfo = this.getParcelas({
+            tipo: emprestimo.tipo,
+            data_emprestimo: emprestimo.data_emprestimo,
+            data_final: emprestimo.data_final,
+          });
+          vencimentos = parcelasInfo.vencimentos;
+          quantidadeFinal = parcelasInfo.quantidade;
+        }
 
-        const valor_previsto = emprestimo.valor_receber / quantidade;
+        const valor_previsto =
+          emprestimo.valor_receber / (quantidadeFinal || vencimentos.length);
 
         await prisma.pagamento.deleteMany({
           where: {
@@ -240,7 +264,7 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
           uuid_emprestimo: emprestimo.uuid,
           uuid_operador: emprestimo.uuid_operador,
           uuid_cliente: emprestimo.uuid_cliente,
-          vencimentos,
+          vencimentos: vencimentos ?? [],
           valor_previsto,
         });
 

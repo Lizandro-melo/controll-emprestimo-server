@@ -66,25 +66,37 @@ export default class Assas {
       .then((response) => response.data.id);
   }
 
-  public async consult_sub(id_sub: string) {
-    await axios
-      .get(`${this.URL_HOST}/subscriptions/${id_sub}/payments?status=OVERDUE`, {
+  public async consult_sub(id_sub: string): Promise<string | null> {
+    const response = await axios.get(
+      `${this.URL_HOST}/subscriptions/${id_sub}/payments?status=OVERDUE`,
+      {
         headers: this.headers,
-      })
-      .then((response) => {
-        if (response.data.data.length > 0) {
-          if (
-            moment(response.data.data[0].dueDate).diff(
-              moment.tz("America/Sao_Paulo"),
-              "d",
-              true,
-            ) < DAYS_EXPIRE_SUB
-          ) {
-            throw new Error(
-              "Não foi possível efetuar o login: existe uma fatura vencida em sua conta.",
-            );
-          }
+      },
+    );
+
+    const pagamentos = response.data?.data ?? [];
+    if (pagamentos.length === 0) return null;
+
+    const now = moment.tz("America/Sao_Paulo");
+    const maiorAtraso = pagamentos.reduce(
+      (acc: { atraso: number; invoiceUrl: string | null }, pagamento: any) => {
+        if (!pagamento?.dueDate) return acc;
+        const atrasoDias = now.diff(moment(pagamento.dueDate), "d", true);
+        if (atrasoDias > acc.atraso) {
+          return {
+            atraso: atrasoDias,
+            invoiceUrl: pagamento?.invoiceUrl ?? pagamento?.bankSlipUrl ?? null,
+          };
         }
-      });
+        return acc;
+      },
+      { atraso: 0, invoiceUrl: null },
+    );
+
+    if (maiorAtraso.atraso >= DAYS_EXPIRE_SUB) {
+      return maiorAtraso.invoiceUrl;
+    }
+
+    return null;
   }
 }

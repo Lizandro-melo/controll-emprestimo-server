@@ -1,5 +1,9 @@
 import { emprestimo } from "@prisma/logic";
-import { create_emprestimo_props, emprestimo_find_props } from "../entities";
+import {
+  create_emprestimo_props,
+  emprestimo_find_props,
+  update_emprestimo_props,
+} from "../entities";
 
 export default interface IEmprestimoRepository {
   create_emprestimo({ ...props }: create_emprestimo_props): Promise<void>;
@@ -24,7 +28,7 @@ export default interface IEmprestimoRepository {
     ...props
   }: {
     uuid_auth: string;
-    emprestimo_props: emprestimo;
+    emprestimo_props: update_emprestimo_props;
   }): Promise<void>;
   delete_emprestimo({
     ...props

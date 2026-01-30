@@ -19,6 +19,11 @@ export default async function session(
       }
     }
   } catch (e: any) {
-    res.status(400).json({ result: "/", m: e.message, type: "error" });
+    const invoiceUrl = e?.invoiceUrl;
+    res.status(400).json({
+      result: "/",
+      m: invoiceUrl ? { message: e.message, invoiceUrl } : e.message,
+      type: "error",
+    });
   }
 }

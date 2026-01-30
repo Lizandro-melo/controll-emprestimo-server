@@ -22,3 +22,11 @@ export default async function pagamentoApiUpdate(
     res.status(403).json({ m: e.message, type: "error" });
   }
 }
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "10mb",
+    },
+  },
+};

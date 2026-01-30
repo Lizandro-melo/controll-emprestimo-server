@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import cors from "@/presentation/lib/middlewares/cors";
-import { response } from "@/domain/entities";
-import { emprestimo } from "@prisma/logic";
+import { response, update_emprestimo_props } from "@/domain/entities";
 import { createCliente } from "@/domain/usecases/cliente";
 import {
   createEmprestimo,
@@ -15,7 +14,7 @@ export default async function emprestimoApiUpdate(
   if (cors(req, res, "PUT")) return;
   try {
     const session = req.headers.authorization?.replace("Bearer ", "");
-    const emprestimo_props: emprestimo = req.body;
+    const emprestimo_props: update_emprestimo_props = req.body;
     await updateEmprestimo({
       session: session!,
       emprestimo_props: emprestimo_props,

@@ -31,10 +31,8 @@ export default async function caixa({
   });
 
   const hoje = moment().tz("America/Sao_Paulo");
-  const inicioDia = hoje.clone().startOf("day");
-  const fimDia = hoje.clone().endOf("day");
-  const inicioMes = hoje.clone().startOf("month");
-  const fimMes = hoje.clone().endOf("month");
+  const toLocal = (date: Date | string | null | undefined) =>
+    date ? moment(date).tz("America/Sao_Paulo") : null;
 
   const total_recebido = pagamentos.reduce(
     (acc, p) => acc + (p.valor_pago || 0),
@@ -42,15 +40,13 @@ export default async function caixa({
   );
 
   const total_previsto_mes = pagamentos
-    .filter((p) =>
-      moment.tz(p.data_vencimento, "America/Sao_Paulo").isSame(hoje, "M"),
-    )
+    .filter((p) => toLocal(p.data_vencimento)?.isSame(hoje, "M"))
     .reduce((acc, p) => acc + (p.valor_previsto || 0), 0);
 
   const total_recebido_mes = pagamentos
     .filter((p) => {
       if (p.status !== "PAGO" || !p.data_pagamento) return false;
-      return moment.tz(p.data_pagamento, "America/Sao_Paulo").isSame(hoje, "M");
+      return toLocal(p.data_pagamento)?.isSame(hoje, "M");
     })
     .reduce((acc, p) => acc + (p.valor_pago || 0), 0);
 
@@ -58,21 +54,19 @@ export default async function caixa({
     .filter(
       (p) =>
         p.status !== "PAGO" &&
-        moment.tz(p.data_vencimento, "America/Sao_Paulo").isSame(hoje, "D"),
+        toLocal(p.data_vencimento)?.isSame(hoje, "D"),
     )
     .reduce((acc, p) => acc + (p.valor_previsto || 0), 0);
 
   const total_recebido_dia = pagamentos
     .filter((p) => {
       if (p.status !== "PAGO" || !p.data_pagamento) return false;
-      return moment.tz(p.data_pagamento, "America/Sao_Paulo").isSame(hoje, "D");
+      return toLocal(p.data_pagamento)?.isSame(hoje, "D");
     })
     .reduce((acc, p) => acc + (p.valor_pago || 0), 0);
 
   const total_emprestado_dia = emprestimos
-    .filter((e) =>
-      moment.tz(e.data_emprestimo, "America/Sao_Paulo").isSame(hoje, "D"),
-    )
+    .filter((e) => toLocal(e.data_emprestimo)?.isSame(hoje, "D"))
     .reduce((acc, e) => acc + (e.valor_emprestimo || 0), 0);
 
   return {

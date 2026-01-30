@@ -21,8 +21,11 @@ export default async function loginApi(
     const session = await login(login_form);
     res.status(200).json({ result: session, type: "sucess" });
   } catch (e: any) {
-    res
-      .status(400)
-      .json({ result: null, m: "Login ou senha inválidos", type: "error" });
+    const invoiceUrl = e?.invoiceUrl;
+    res.status(400).json({
+      result: null,
+      m: invoiceUrl ? { message: e.message, invoiceUrl } : e.message,
+      type: "error",
+    });
   }
 }

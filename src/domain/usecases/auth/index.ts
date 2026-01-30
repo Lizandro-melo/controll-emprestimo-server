@@ -33,7 +33,14 @@ export async function login({
   const { uuid_auth, id_sub } = await auth.consult_uuid_auth_by_cpf({
     cpf: props.login,
   });
-  await ASSAS.consult_sub(id_sub);
+  const invoiceUrl = await ASSAS.consult_sub(id_sub);
+  if (invoiceUrl) {
+    const error: any = new Error(
+      "Nao foi possivel efetuar o login: existe uma fatura vencida em sua conta.",
+    );
+    error.invoiceUrl = invoiceUrl;
+    throw error;
+  }
   if (
     await compare(
       props.senha,
@@ -58,6 +65,13 @@ export async function session_consult({
   const { uuid_auth, id_sub } = await auth.consult_uuid_auth_by_session({
     session,
   });
-  await ASSAS.consult_sub(id_sub);
+  const invoiceUrl = await ASSAS.consult_sub(id_sub);
+  if (invoiceUrl) {
+    const error: any = new Error(
+      "Nao foi possivel efetuar o login: existe uma fatura vencida em sua conta.",
+    );
+    error.invoiceUrl = invoiceUrl;
+    throw error;
+  }
   return await auth.consult_tipo_user_by_uuid({ uuid_auth });
 }

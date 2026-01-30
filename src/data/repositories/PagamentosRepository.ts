@@ -23,6 +23,9 @@ export default class PagamentoRepository implements IPagamentoRepository {
       uuid_emprestimo: pagamento?.uuid_emprestimo ?? "",
       uuid_pagamento: pagamento?.uuid ?? "",
       valor_pago: pagamento?.valor_pago ?? null,
+      comprovante: pagamento?.comprovante
+        ? Buffer.from(pagamento.comprovante).toString("base64")
+        : null,
     };
   }
   async consult_pagamento_by_uuid_auth_and_page({
@@ -69,7 +72,9 @@ export default class PagamentoRepository implements IPagamentoRepository {
             uuid: pagamento_props.uuid_pagamento,
           },
           data: {
-            comprovante: pagamento_props.comprovante,
+            comprovante: pagamento_props.comprovante
+              ? Buffer.from(pagamento_props.comprovante, "base64")
+              : undefined,
             data_pagamento: moment(pagamento_props.data_pagamento).toDate(),
             observacao: pagamento_props.observacao,
             valor_pago: parseFloat(
