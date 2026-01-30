@@ -41,6 +41,7 @@ enum Tipo_pagamento {
 enum Tipo_cobranca {
   ANUAL
   MENSAL
+  QUINZENAL
   SEMANAL
   DIARIO
 }

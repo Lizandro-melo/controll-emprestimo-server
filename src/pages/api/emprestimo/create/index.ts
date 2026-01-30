@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import cors from "@/presentation/lib/middlewares/cors";
-import { response } from "@/domain/entities";
-import { emprestimo } from "@prisma/logic";
+import { create_emprestimo_props, response } from "@/domain/entities";
 import { createCliente } from "@/domain/usecases/cliente";
 import { createEmprestimo } from "@/domain/usecases/emprestimo";
 
@@ -12,7 +11,8 @@ export default async function emprestimoApiCreate(
   if (cors(req, res, "POST")) return;
   try {
     const session = req.headers.authorization?.replace("Bearer ", "");
-    const emprestimo_props: emprestimo = req.body;
+    const emprestimo_props: Omit<create_emprestimo_props, "uuid_operador"> =
+      req.body;
     await createEmprestimo({
       session: session!,
       emprestimo_props: emprestimo_props,

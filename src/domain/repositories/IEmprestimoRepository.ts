@@ -1,8 +1,8 @@
 import { emprestimo } from "@prisma/logic";
-import { emprestimo_find_props } from "../entities";
+import { create_emprestimo_props, emprestimo_find_props } from "../entities";
 
 export default interface IEmprestimoRepository {
-  create_emprestimo({ ...props }: emprestimo): Promise<void>;
+  create_emprestimo({ ...props }: create_emprestimo_props): Promise<void>;
   consult_all_by_uuid({
     uuid_auth,
   }: {

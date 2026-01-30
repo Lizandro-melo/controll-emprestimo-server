@@ -1,4 +1,4 @@
-import { emprestimo_find_props } from "@/domain/entities";
+import { create_emprestimo_props, emprestimo_find_props } from "@/domain/entities";
 import IEmprestimoRepository from "@/domain/repositories/IEmprestimoRepository";
 import { Prisma_logic } from "@/infra/db";
 import { emprestimo, pagamento } from "@prisma/logic";
@@ -6,6 +6,143 @@ import { log } from "console";
 import moment from "moment";
 
 export default class EmprestimoRepository implements IEmprestimoRepository {
+  private getParcelas({
+    tipo,
+    data_emprestimo,
+    data_final,
+  }: {
+    tipo: emprestimo["tipo"];
+    data_emprestimo: Date;
+    data_final: Date;
+  }): { quantidade: number; vencimentos: Date[] } {
+    const inicio = moment(data_emprestimo).tz("America/Sao_Paulo");
+    const fim = moment(data_final).tz("America/Sao_Paulo");
+
+    if (fim.isBefore(inicio)) {
+      throw new Error("Período inválido para gerar parcelas.");
+    }
+
+    let quantidade = 0;
+    let unidade: moment.unitOfTime.DurationConstructor = "days";
+    let passo = 1;
+
+    switch (tipo) {
+      case "DIARIO": {
+        const diffDias = fim.diff(inicio, "d", true);
+        quantidade = Math.max(1, Math.ceil(diffDias / 1));
+        unidade = "days";
+        passo = 1;
+        break;
+      }
+      case "SEMANAL": {
+        const diffDias = fim.diff(inicio, "d", true);
+        quantidade = Math.max(1, Math.ceil(diffDias / 7));
+        unidade = "days";
+        passo = 7;
+        break;
+      }
+      case "QUINZENAL": {
+        const diffDias = fim.diff(inicio, "d", true);
+        quantidade = Math.max(1, Math.ceil(diffDias / 15));
+        unidade = "days";
+        passo = 15;
+        break;
+      }
+      case "MENSAL": {
+        const diffMeses = fim.diff(inicio, "M", true);
+        quantidade = Math.max(1, Math.ceil(diffMeses));
+        unidade = "months";
+        passo = 1;
+        break;
+      }
+      default:
+        throw new Error("Plano de pagamento inválido.");
+    }
+
+    const vencimentos: Date[] = [];
+    for (let i = 1; i < quantidade; i++) {
+      vencimentos.push(
+        inicio
+          .clone()
+          .add(i * passo, unidade)
+          .toDate(),
+      );
+    }
+    vencimentos.push(fim.toDate());
+
+    return { quantidade, vencimentos };
+  }
+
+  private buildPagamentosData({
+    uuid_emprestimo,
+    uuid_operador,
+    uuid_cliente,
+    vencimentos,
+    valor_previsto,
+  }: {
+    uuid_emprestimo: string;
+    uuid_operador: string;
+    uuid_cliente: string;
+    vencimentos: Date[];
+    valor_previsto: number;
+  }) {
+    return vencimentos.map((vencimento) => ({
+      uuid_emprestimo,
+      data_vencimento: vencimento,
+      valor_previsto,
+      uuid_operador,
+      uuid_cliente,
+    }));
+  }
+
+  private getParcelasByQuantidade({
+    tipo,
+    data_emprestimo,
+    quantidade,
+  }: {
+    tipo: emprestimo["tipo"];
+    data_emprestimo: Date;
+    quantidade: number;
+  }): { vencimentos: Date[]; data_final: Date } {
+    if (!quantidade || quantidade < 1) {
+      throw new Error("Quantidade de parcelas invÃ¡lida.");
+    }
+
+    const inicio = moment(data_emprestimo).tz("America/Sao_Paulo");
+    let unidade: moment.unitOfTime.DurationConstructor = "days";
+    let passo = 1;
+
+    switch (tipo) {
+      case "DIARIO":
+        unidade = "days";
+        passo = 1;
+        break;
+      case "SEMANAL":
+        unidade = "days";
+        passo = 7;
+        break;
+      case "QUINZENAL":
+        unidade = "days";
+        passo = 15;
+        break;
+      case "MENSAL":
+        unidade = "months";
+        passo = 1;
+        break;
+      default:
+        throw new Error("Plano de pagamento invÃ¡lido.");
+    }
+
+    const vencimentos: Date[] = [];
+    for (let i = 0; i < quantidade; i++) {
+      vencimentos.push(inicio.clone().add(i * passo, unidade).toDate());
+    }
+
+    return {
+      vencimentos,
+      data_final: vencimentos[vencimentos.length - 1],
+    };
+  }
   async delete_emprestimo({
     ...props
   }: {
@@ -39,7 +176,8 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
     uuid_auth: string;
     emprestimo_props: emprestimo;
   }): Promise<void> {
-    await Prisma_logic.$transaction(async (prisma) => {
+    await Prisma_logic.$transaction(
+      async (prisma) => {
       const emprestimo_consult = await prisma.emprestimo.findUnique({
         where: {
           uuid: props.emprestimo_props.uuid,
@@ -84,43 +222,40 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
       });
 
       if (consulta) {
-        switch (emprestimo.tipo) {
-          case "MENSAL":
-            const diferenca_mes = moment(emprestimo.data_final).diff(
-              moment(emprestimo.data_emprestimo),
-              "M"
-            );
+        const { quantidade, vencimentos } = this.getParcelas({
+          tipo: emprestimo.tipo,
+          data_emprestimo: emprestimo.data_emprestimo,
+          data_final: emprestimo.data_final,
+        });
 
-            const valor_previsto = emprestimo.valor_receber / diferenca_mes;
+        const valor_previsto = emprestimo.valor_receber / quantidade;
 
-            await prisma.pagamento.deleteMany({
-              where: {
-                uuid_emprestimo: emprestimo.uuid,
-              },
-            });
+        await prisma.pagamento.deleteMany({
+          where: {
+            uuid_emprestimo: emprestimo.uuid,
+          },
+        });
 
-            for (let i = 1; i < diferenca_mes; i++) {
-              const vencimento = moment(emprestimo.data_emprestimo)
-                .tz("America/Sao_Paulo")
-                .add(i, "months")
-                .toDate();
+        const pagamentosData = this.buildPagamentosData({
+          uuid_emprestimo: emprestimo.uuid,
+          uuid_operador: emprestimo.uuid_operador,
+          uuid_cliente: emprestimo.uuid_cliente,
+          vencimentos,
+          valor_previsto,
+        });
 
-              await prisma.pagamento.create({
-                data: {
-                  uuid_emprestimo: emprestimo.uuid,
-                  data_vencimento: vencimento,
-                  valor_previsto: valor_previsto,
-                  uuid_operador: emprestimo.uuid_operador,
-                  uuid_cliente: emprestimo.uuid_cliente,
-                },
-              });
-            }
-            break;
-          default:
-            throw new Error("Plano de pagamento inválido.");
+        if (pagamentosData.length > 0) {
+          await prisma.pagamento.createMany({
+            data: pagamentosData,
+          });
         }
       }
-    });
+      },
+      {
+        maxWait: 10000,
+        timeout: 15000,
+      },
+    );
   }
   async consult_emprestimo_by_uuid_emprestimo({
     ...props
@@ -139,6 +274,9 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
     const pagamentos: pagamento[] = await Prisma_logic.pagamento.findMany({
       where: {
         uuid_emprestimo: emprestimo?.uuid,
+      },
+      orderBy: {
+        data_vencimento: "asc",
       },
     });
 
@@ -179,51 +317,52 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
       },
     });
   }
-  async create_emprestimo({ ...props }: emprestimo): Promise<void> {
-    await Prisma_logic.$transaction(async (prisma) => {
+  async create_emprestimo({ ...props }: create_emprestimo_props): Promise<void> {
+    await Prisma_logic.$transaction(
+      async (prisma) => {
+      const { quantidade_parcelas, ...emprestimoBase } = props;
+      const quantidade = Number(quantidade_parcelas);
+      const dataEmprestimo = moment(emprestimoBase.data_emprestimo)
+        .tz("America/Sao_Paulo")
+        .toDate();
+      const { vencimentos, data_final } = this.getParcelasByQuantidade({
+        tipo: emprestimoBase.tipo,
+        data_emprestimo: dataEmprestimo,
+        quantidade,
+      });
+
       const emprestimo = await prisma.emprestimo.create({
         data: {
-          ...props,
+          ...emprestimoBase,
           valor_emprestimo: parseFloat(
-            (props.valor_emprestimo ?? 0).toString()
+            (emprestimoBase.valor_emprestimo ?? 0).toString(),
           ),
-          valor_receber: parseFloat((props.valor_receber ?? 0).toString()),
-          data_final: moment(props.data_final).tz("America/Sao_Paulo").toDate(),
-          data_emprestimo: moment(props.data_emprestimo)
-            .tz("America/Sao_Paulo")
-            .toDate(),
+          valor_receber: parseFloat((emprestimoBase.valor_receber ?? 0).toString()),
+          data_final,
+          data_emprestimo: dataEmprestimo,
         },
       });
 
-      switch (props.tipo) {
-        case "MENSAL":
-          const diferenca_mes = moment(props.data_final).diff(
-            moment(props.data_emprestimo),
-            "M"
-          );
+      const valor_previsto = emprestimo.valor_receber / quantidade;
 
-          const valor_previsto = emprestimo.valor_receber / diferenca_mes;
+      const pagamentosData = this.buildPagamentosData({
+        uuid_emprestimo: emprestimo.uuid,
+        uuid_operador: props.uuid_operador,
+        uuid_cliente: props.uuid_cliente,
+        vencimentos,
+        valor_previsto,
+      });
 
-          for (let i = 1; i < diferenca_mes; i++) {
-            const vencimento = moment(props.data_emprestimo)
-              .tz("America/Sao_Paulo")
-              .add(i, "months")
-              .toDate();
-
-            await prisma.pagamento.create({
-              data: {
-                uuid_emprestimo: emprestimo.uuid,
-                data_vencimento: vencimento,
-                valor_previsto: valor_previsto,
-                uuid_operador: props.uuid_operador,
-                uuid_cliente: props.uuid_cliente,
-              },
-            });
-          }
-          break;
-        default:
-          throw new Error("Plano de pagamento inválido.");
+      if (pagamentosData.length > 0) {
+        await prisma.pagamento.createMany({
+          data: pagamentosData,
+        });
       }
-    });
+      },
+      {
+        maxWait: 10000,
+        timeout: 15000,
+      },
+    );
   }
 }

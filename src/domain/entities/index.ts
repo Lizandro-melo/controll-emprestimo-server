@@ -4,7 +4,7 @@ import type {
   emprestimo,
   endereco_cliente,
   pagamento,
-  Status_divida,
+  Tipo_cobranca,
   Tipo_pagamento,
 } from "@prisma/logic";
 
@@ -35,6 +35,18 @@ export type create_cliente = {
   numero_residencial: string;
 };
 
+export type create_emprestimo_props = {
+  nome_emprestimo: string;
+  valor_emprestimo: number;
+  valor_receber: number;
+  tipo: Tipo_cobranca;
+  data_emprestimo: Date | string;
+  observacao?: string;
+  uuid_cliente: string;
+  uuid_operador: string;
+  quantidade_parcelas: number;
+};
+
 export type find_cliente = {
   nome_completo: string;
   num_cpf: string;
@@ -56,29 +68,21 @@ export type pagamento_props = {
 };
 
 export type dashboard_props = {
-  total_previsto_dia: number;
-  total_recebido_dia: number;
+  clientes_pendentes: cliente[];
+};
+
+export type caixa_props = {
+  total_recebido: number;
   total_previsto_mes: number;
   total_recebido_mes: number;
-  pagamentos_mes: {
-    nome_cliente: string;
-    valor_previsto: number;
-    valor_pago?: number;
-    nome_emprestimo: string;
-    data_vencimento: Date;
-    status: Status_divida;
-    uuid_pagamento: string;
-  }[];
-  emprestimos_ativos: {
-    nome_cliente: string;
-    uuid_emprestimo: string;
-    valor_emprestimo: number;
-    valor_receber: number;
-    valor_recebido: number;
-    data_emprestimo: Date;
-    data_final: Date;
-    status: Status_divida;
-  }[];
+  total_previsto_dia: number;
+  total_recebido_dia: number;
+  total_emprestado_dia: number;
+};
+
+export type relatorio_props = {
+  total_previsto: number;
+  total_recebido: number;
 };
 
 export type cliente_props = {
