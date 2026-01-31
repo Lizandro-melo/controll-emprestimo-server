@@ -138,7 +138,7 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
     }
 
     const vencimentos: Date[] = [];
-    for (let i = 0; i < quantidade; i++) {
+    for (let i = 1; i < quantidade; i++) {
       vencimentos.push(inicio.clone().add(i * passo, unidade).toDate());
     }
 

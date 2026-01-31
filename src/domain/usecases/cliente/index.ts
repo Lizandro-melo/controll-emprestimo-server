@@ -20,7 +20,7 @@ export async function createCliente({
   create_cliente.num_cpf = create_cliente.num_cpf
     .replaceAll(".", "")
     .replace("-", "");
-  if (!isCPF(create_cliente.num_cpf)) throw new Error("Numero de CPF invalido");
+  // if (!isCPF(create_cliente.num_cpf)) throw new Error("Numero de CPF invalido");
   await cliente_repository.consult_cpf_cliente_by_uuid_cliente({
     num_cpf: create_cliente?.num_cpf,
     uuid_auth,

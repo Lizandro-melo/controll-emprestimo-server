@@ -171,6 +171,7 @@ export default class ClienteRepository implements IClienteRepository {
       where: {
         num_cpf: num_cpf,
         uuid_operador: uuid_auth,
+        delete: false,
       },
     });
     if (cliente)
