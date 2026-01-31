@@ -109,7 +109,7 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
     quantidade: number;
   }): { vencimentos: Date[]; data_final: Date } {
     if (!quantidade || quantidade < 1) {
-      throw new Error("Quantidade de parcelas invÃ¡lida.");
+      throw new Error("Quantidade de parcelas invalida.");
     }
 
     const inicio = moment(data_emprestimo).tz("America/Sao_Paulo");
@@ -138,7 +138,7 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
     }
 
     const vencimentos: Date[] = [];
-    for (let i = 1; i < quantidade; i++) {
+    for (let i = 1; i < quantidade+1; i++) {
       vencimentos.push(inicio.clone().add(i * passo, unidade).toDate());
     }
 
