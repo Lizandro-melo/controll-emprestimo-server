@@ -1,7 +1,7 @@
 import { pagamento_props } from "@/domain/entities";
 import IPagamentoRepository from "@/domain/repositories/IPagamentoRepository";
 import { Prisma_logic } from "@/infra/db";
-import { pagamento, Tipo_pagamento } from "@prisma/logic/client";
+import { pagamento, Tipo_pagamento } from "@/../prisma/generated/logic/client";
 import moment from "moment";
 
 export default class PagamentoRepository implements IPagamentoRepository {

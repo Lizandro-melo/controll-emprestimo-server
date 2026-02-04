@@ -1,5 +1,5 @@
-import { PrismaClient as AuthClient } from "@prisma/auth";
-import { PrismaClient as LogicClient } from "@prisma/logic";
+import { PrismaClient as AuthClient } from "@/../prisma/generated/auth";
+import { PrismaClient as LogicClient } from "@/../prisma/generated/logic";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const adapterAuth = new PrismaPg({

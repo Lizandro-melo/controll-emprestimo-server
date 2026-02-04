@@ -1,7 +1,7 @@
 import AuthRepository from "@/data/repositories/AuthRepository";
 import { register } from "@/domain/entities";
 import { ASSAS } from "@/infra/constants";
-import { Tipo_User } from "@prisma/auth";
+import { Tipo_User } from "@/../prisma/generated/auth";
 import { compare } from "bcrypt";
 import { isCPF } from "validation-br";
 

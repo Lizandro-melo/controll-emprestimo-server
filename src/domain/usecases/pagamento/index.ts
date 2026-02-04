@@ -1,7 +1,7 @@
 import AuthRepository from "@/data/repositories/AuthRepository";
 import PagamentoRepository from "@/data/repositories/PagamentosRepository";
 import { pagamento_props } from "@/domain/entities";
-import { pagamento } from "@prisma/logic";
+import { pagamento } from "@/../prisma/generated/logic";
 
 const auth_repository = new AuthRepository();
 const pagamento_repository = new PagamentoRepository();

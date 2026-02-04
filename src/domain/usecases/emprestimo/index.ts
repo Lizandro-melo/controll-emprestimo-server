@@ -5,7 +5,7 @@ import {
   emprestimo_find_props,
   update_emprestimo_props,
 } from "@/domain/entities";
-import { emprestimo } from "@prisma/logic";
+import { emprestimo } from "@/../prisma/generated/logic";
 
 const auth_repository = new AuthRepository();
 const emprestimo_repository = new EmprestimoRepository();

@@ -1,6 +1,6 @@
 generator client_auth {
-  provider      = "prisma-client-js"
-  output = "../prisma/generated/auth"
+  provider = "prisma-client-js"
+  output   = "../prisma/generated/auth"
 
   compilerBuild = "small"
 }

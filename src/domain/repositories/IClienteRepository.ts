@@ -1,5 +1,5 @@
 import { cliente_props, create_cliente, find_cliente } from "../entities";
-import { cliente } from "@prisma/logic";
+import { cliente } from "@/../prisma/generated/logic";
 
 export default interface IClienteRepository {
   register_cliente({

@@ -1,7 +1,7 @@
 import AuthRepository from "@/data/repositories/AuthRepository";
 import ClienteRepository from "@/data/repositories/ClienteRepository";
 import { cliente_props, create_cliente } from "@/domain/entities";
-import { cliente } from "@prisma/logic/client";
+import { cliente } from "@/../prisma/generated/logic/client";
 import { isCPF } from "validation-br";
 
 const auth_repository = new AuthRepository();

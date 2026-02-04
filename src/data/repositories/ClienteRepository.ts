@@ -1,7 +1,7 @@
 import { cliente_props, create_cliente, find_cliente } from "@/domain/entities";
 import IClienteRepository from "@/domain/repositories/IClienteRepository";
 import { Prisma_auth, Prisma_logic } from "@/infra/db";
-import { cliente } from "@prisma/logic/client";
+import { cliente } from "@/../prisma/generated/logic/client";
 import { log } from "console";
 import moment from "moment-timezone";
 

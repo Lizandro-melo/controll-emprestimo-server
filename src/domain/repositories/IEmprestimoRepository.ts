@@ -1,4 +1,4 @@
-import { emprestimo } from "@prisma/logic";
+import { emprestimo } from "@/../prisma/generated/logic";
 import {
   create_emprestimo_props,
   emprestimo_find_props,

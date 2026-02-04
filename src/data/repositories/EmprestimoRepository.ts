@@ -5,7 +5,7 @@ import {
 } from "@/domain/entities";
 import IEmprestimoRepository from "@/domain/repositories/IEmprestimoRepository";
 import { Prisma_logic } from "@/infra/db";
-import { emprestimo, pagamento } from "@prisma/logic";
+import { emprestimo, pagamento } from "@/../prisma/generated/logic";
 import { log } from "console";
 import moment from "moment";
 

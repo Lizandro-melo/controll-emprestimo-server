@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import cors from "@/presentation/lib/middlewares/cors";
 import { response } from "@/domain/entities";
-import { emprestimo } from "@prisma/logic";
+import { emprestimo } from "@/../prisma/generated/logic";
 import { createCliente } from "@/domain/usecases/cliente";
 import {
   createEmprestimo,

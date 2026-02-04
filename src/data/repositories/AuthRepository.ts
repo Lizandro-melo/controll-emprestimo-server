@@ -2,7 +2,7 @@ import { register } from "@/domain/entities";
 import IAuthRepository from "@/domain/repositories/IAuthRepository";
 import { ASSAS, DAYS_EXPIRE_SESSION, SALT_ROUNDS } from "@/infra/constants";
 import { Prisma_auth, Prisma_logic } from "@/infra/db";
-import { Tipo_User } from "@prisma/auth";
+import { Tipo_User } from "@/../prisma/generated/auth";
 import { hash } from "bcrypt";
 import moment from "moment-timezone";
 

@@ -6,7 +6,7 @@ import type {
   pagamento,
   Tipo_cobranca,
   Tipo_pagamento,
-} from "@prisma/logic";
+} from "@/../prisma/generated/logic";
 
 export type response = {
   result?: any;

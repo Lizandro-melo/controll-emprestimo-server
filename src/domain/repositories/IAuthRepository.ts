@@ -1,4 +1,4 @@
-import { Tipo_User } from "@prisma/auth";
+import { Tipo_User } from "@/../prisma/generated/auth";
 import { register } from "../entities";
 
 export default interface IAuthRepository {

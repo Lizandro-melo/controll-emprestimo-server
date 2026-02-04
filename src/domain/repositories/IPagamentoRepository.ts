@@ -1,5 +1,5 @@
 import { pagamento_props } from "../entities";
-import { pagamento } from "@prisma/logic";
+import { pagamento } from "@/../prisma/generated/logic";
 
 export default interface IPagamentoRepository {
   lancar_pagamento({
