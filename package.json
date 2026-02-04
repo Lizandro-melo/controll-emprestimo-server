@@ -10,8 +10,7 @@
     "format": "biome format --write",
     "db:migrate": "prisma migrate dev --config=prisma.auth.config.ts && prisma migrate dev --config=prisma.logic.config.ts",
     "db:generate": "prisma generate --config=prisma.auth.config.ts && prisma generate --config=prisma.logic.config.ts",
-    "db:push": "prisma db push --config=prisma.auth.config.ts && prisma db push --config=prisma.logic.config.ts",
-    "install": "pnpm i"
+    "db:push": "prisma db push --config=prisma.auth.config.ts && prisma db push --config=prisma.logic.config.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
