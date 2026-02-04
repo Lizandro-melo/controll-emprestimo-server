@@ -15,10 +15,7 @@ export default async function registerApi(
   if (cors(req, res, "PUT")) return;
   try {
     const token = req.headers.authorization?.replace("Bearer ", "");
-    console.log(token);
-
     const register = req.body;
-
     await register_operador({ token: token!, register: register });
     res.status(200).json({
       result: null,

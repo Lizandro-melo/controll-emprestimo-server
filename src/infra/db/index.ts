@@ -1,5 +1,13 @@
 import { PrismaClient as AuthClient } from "@prisma/auth";
 import { PrismaClient as LogicClient } from "@prisma/logic";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-export const Prisma_auth = new AuthClient();
-export const Prisma_logic = new LogicClient();
+const adapterAuth = new PrismaPg({
+  connectionString: process.env.DATABASE_URL_AUTH!,
+});
+const adapterLogic = new PrismaPg({
+  connectionString: process.env.DATABASE_URL_LOGIC!,
+});
+
+export const Prisma_auth = new AuthClient({ adapter: adapterAuth });
+export const Prisma_logic = new LogicClient({ adapter: adapterLogic });

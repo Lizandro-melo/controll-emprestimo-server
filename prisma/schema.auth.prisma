@@ -1,11 +1,11 @@
 generator client_auth {
-  provider = "prisma-client-js"
-  output   = "../node_modules/@prisma/auth"
+  provider      = "prisma-client-js"
+  output        = "../node_modules/@prisma/auth"
+  compilerBuild = "small"
 }
 
 datasource db_auth {
   provider = "postgresql"
-  url      = env("DATABASE_URL_AUTH")
 }
 
 enum Tipo_User {
