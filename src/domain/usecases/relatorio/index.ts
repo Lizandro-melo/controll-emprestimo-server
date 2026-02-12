@@ -58,8 +58,27 @@ export default async function relatorio({
     0
   );
 
+  const movimentos = await Prisma_logic.caixa_movimento.findMany({
+    where: {
+      uuid_operador: uuid_auth,
+      data_movimento: {
+        gte: inicio.toDate(),
+        lte: fim.toDate(),
+      },
+    },
+    orderBy: {
+      data_movimento: "asc",
+    },
+  });
+
   return {
     total_previsto,
     total_recebido,
+    movimentos: movimentos.map((m) => ({
+      tipo: m.tipo,
+      valor: m.valor,
+      data_movimento: m.data_movimento.toISOString(),
+      referencia: m.referencia,
+    })),
   };
 }

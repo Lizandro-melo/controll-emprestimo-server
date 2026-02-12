@@ -56,6 +56,29 @@ export default class AuthRepository implements IAuthRepository {
         throw new Error("/");
       });
   }
+  async update_senha({
+    uuid_auth,
+    senha_hash,
+  }: {
+    uuid_auth: string;
+    senha_hash: string;
+  }): Promise<void> {
+    await Prisma_auth.historico_senha.upsert({
+      where: {
+        uuid: uuid_auth,
+      },
+      create: {
+        uuid: uuid_auth,
+        senha: senha_hash,
+        status: true,
+      },
+      update: {
+        senha: senha_hash,
+        status: true,
+        record_update: new Date(),
+      },
+    });
+  }
   async consult_uuid_auth_by_cpf({
     cpf,
   }: {
@@ -106,10 +129,9 @@ export default class AuthRepository implements IAuthRepository {
     uuid_auth: string;
   }): Promise<string> {
     return await Prisma_auth.historico_senha
-      .findFirstOrThrow({
+      .findUniqueOrThrow({
         where: {
           uuid: uuid_auth,
-          status: true,
         },
       })
       .then(async (response) => response.senha)

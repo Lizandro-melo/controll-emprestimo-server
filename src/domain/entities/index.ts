@@ -83,6 +83,9 @@ export type dashboard_props = {
 };
 
 export type caixa_props = {
+  caixa_atual: number;
+  caixa_passado: number;
+  movimentos_count: number;
   total_recebido: number;
   total_previsto_mes: number;
   total_recebido_mes: number;
@@ -94,6 +97,12 @@ export type caixa_props = {
 export type relatorio_props = {
   total_previsto: number;
   total_recebido: number;
+  movimentos: {
+    tipo: "ENTRADA" | "SAIDA";
+    valor: number;
+    data_movimento: string;
+    referencia: string;
+  }[];
 };
 
 export type cliente_props = {
@@ -117,4 +126,13 @@ export type cliente_props = {
 export type emprestimo_find_props = {
   emprestimo: emprestimo;
   pagamentos: pagamento[];
+};
+
+export type operador_profile = {
+  uuid: string;
+  nome_completo: string;
+  num_cpf: string;
+  num_cnpj: string | null;
+  correio_eletronico: string;
+  data_nascimento: string | null;
 };

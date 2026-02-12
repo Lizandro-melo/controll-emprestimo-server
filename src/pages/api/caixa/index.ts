@@ -11,7 +11,11 @@ export default async function CaixaApi(
   if (cors(req, res, "GET")) return;
   try {
     const session = req.headers.authorization?.replace("Bearer ", "");
-    const caixa_props = await caixa({ session: session! });
+    const { data_referencia } = req.query;
+    const caixa_props = await caixa({
+      session: session!,
+      data_referencia: data_referencia ? String(data_referencia) : undefined,
+    });
     res.status(200).json({ result: caixa_props, type: "sucess" });
   } catch (e: any) {
     res.status(403).json({ m: e.message, type: "error" });
