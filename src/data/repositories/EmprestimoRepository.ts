@@ -172,6 +172,13 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
           delete: true,
         },
       });
+
+      await prisma.caixa_movimento.deleteMany({
+        where: {
+          uuid_operador: props.uuid_auth,
+          referencia: `EMPRESTIMO:${emprestimo.uuid}`,
+        },
+      });
     });
   }
   async update_emprestimo({
@@ -237,6 +244,26 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
         },
         omit: {
           valor_recebido: true,
+        },
+      });
+
+      await prisma.caixa_movimento.upsert({
+        where: {
+          uuid_operador_referencia: {
+            uuid_operador: props.uuid_auth,
+            referencia: `EMPRESTIMO:${emprestimo.uuid}`,
+          },
+        },
+        create: {
+          uuid_operador: props.uuid_auth,
+          referencia: `EMPRESTIMO:${emprestimo.uuid}`,
+          tipo: "SAIDA",
+          valor: emprestimo.valor_emprestimo,
+          data_movimento: emprestimo.data_emprestimo,
+        },
+        update: {
+          valor: emprestimo.valor_emprestimo,
+          data_movimento: emprestimo.data_emprestimo,
         },
       });
 
@@ -364,6 +391,16 @@ export default class EmprestimoRepository implements IEmprestimoRepository {
           valor_receber: parseFloat((emprestimoBase.valor_receber ?? 0).toString()),
           data_final,
           data_emprestimo: dataEmprestimo,
+        },
+      });
+
+      await prisma.caixa_movimento.create({
+        data: {
+          uuid_operador: props.uuid_operador,
+          referencia: `EMPRESTIMO:${emprestimo.uuid}`,
+          tipo: "SAIDA",
+          valor: emprestimo.valor_emprestimo,
+          data_movimento: emprestimo.data_emprestimo,
         },
       });
 

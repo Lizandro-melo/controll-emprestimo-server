@@ -47,6 +47,11 @@ enum Tipo_cobranca {
   DIARIO
 }
 
+enum Tipo_movimento_caixa {
+  ENTRADA
+  SAIDA
+}
+
 // Operador
 
 model operador {
@@ -64,6 +69,7 @@ model operador {
   configuracaos configuracao[]
   emprestimos   emprestimo[]
   pagamentos    pagamento[]
+  caixaMovimentos caixa_movimento[]
 }
 
 model celular_operador {
@@ -180,4 +186,17 @@ model pagamento {
   operador   operador      @relation(fields: [uuid_operador], references: [uuid])
   status     Status_divida @default(PENDENTE)
   emprestimo emprestimo    @relation(fields: [uuid_emprestimo], references: [uuid])
+}
+
+model caixa_movimento {
+  id             Int                 @id @default(autoincrement())
+  uuid_operador  String
+  referencia     String
+  tipo           Tipo_movimento_caixa
+  valor          Float
+  data_movimento DateTime
+  operador       operador            @relation(fields: [uuid_operador], references: [uuid])
+
+  @@unique([uuid_operador, referencia])
+  @@index([uuid_operador, data_movimento])
 }

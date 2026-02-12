@@ -67,6 +67,20 @@ export default class PagamentoRepository implements IPagamentoRepository {
   }): Promise<void> {
     await Prisma_logic.$transaction(
       async (prisma) => {
+        const pagamentoAtual = await prisma.pagamento.findUnique({
+          where: {
+            uuid: pagamento_props.uuid_pagamento,
+          },
+        });
+        if (!pagamentoAtual) {
+          throw new Error("Pagamento nao encontrado.");
+        }
+        const valorPago = parseFloat(
+          pagamento_props.valor_pago!.toString().replace(",", ".")
+        );
+        const dataPagamento = moment(pagamento_props.data_pagamento).toDate();
+        const referencia = `PAGAMENTO:${pagamento_props.uuid_pagamento}`;
+
         await prisma.pagamento.update({
           where: {
             uuid: pagamento_props.uuid_pagamento,
@@ -75,13 +89,31 @@ export default class PagamentoRepository implements IPagamentoRepository {
             comprovante: pagamento_props.comprovante
               ? Buffer.from(pagamento_props.comprovante, "base64")
               : undefined,
-            data_pagamento: moment(pagamento_props.data_pagamento).toDate(),
+            data_pagamento: dataPagamento,
             observacao: pagamento_props.observacao,
-            valor_pago: parseFloat(
-              pagamento_props.valor_pago!.toString().replace(",", ".")
-            ),
+            valor_pago: valorPago,
             tipo_pagamento: pagamento_props.tipo_pagamento as Tipo_pagamento,
             status: "PAGO",
+          },
+        });
+
+        await prisma.caixa_movimento.upsert({
+          where: {
+            uuid_operador_referencia: {
+              uuid_operador: pagamentoAtual.uuid_operador,
+              referencia,
+            },
+          },
+          create: {
+            uuid_operador: pagamentoAtual.uuid_operador,
+            referencia,
+            tipo: "ENTRADA",
+            valor: valorPago,
+            data_movimento: dataPagamento,
+          },
+          update: {
+            valor: valorPago,
+            data_movimento: dataPagamento,
           },
         });
         const pagamentos_pagos = await prisma.pagamento.findMany({

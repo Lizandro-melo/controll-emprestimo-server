@@ -35,4 +35,11 @@ export default interface IAuthRepository {
   }: {
     uuid_auth: string;
   }): Promise<Tipo_User | undefined>;
+  update_senha({
+    uuid_auth,
+    senha_hash,
+  }: {
+    uuid_auth: string;
+    senha_hash: string;
+  }): Promise<void>;
 }
