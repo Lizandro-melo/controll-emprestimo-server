@@ -79,9 +79,8 @@ export default async function caixa({
 
   const hoje = baseDate;
   const inicioHoje = hoje.clone().startOf("day");
-  const inicioMes = hoje.clone().startOf("month");
-  const inicioMesPassado = hoje.clone().subtract(1, "month").startOf("month");
-  const fimMesPassado = hoje.clone().subtract(1, "month").endOf("month");
+  const inicioDiaAnterior = hoje.clone().subtract(1, "day").startOf("day");
+  const fimDiaAnterior = hoje.clone().subtract(1, "day").endOf("day");
   const toLocal = (date: Date | string | null | undefined) =>
     date ? moment(date).tz("America/Sao_Paulo") : null;
 
@@ -94,7 +93,7 @@ export default async function caixa({
     .filter((m) => {
       const data = toLocal(m.data_movimento);
       if (!data) return false;
-      return data.isSame(inicioMesPassado, "month");
+      return data.isSameOrBefore(fimDiaAnterior, "day");
     })
     .reduce((acc, m) => acc + (m.tipo === "ENTRADA" ? m.valor : -m.valor), 0);
 
