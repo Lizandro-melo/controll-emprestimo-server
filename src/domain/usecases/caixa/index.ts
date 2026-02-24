@@ -103,21 +103,20 @@ export default async function caixa({
   );
 
   const total_previsto_mes = pagamentos
-    .filter((p) => toLocal(p.data_vencimento)?.isSame(hoje, "M"))
+    .filter((p) => toLocal(p.data_vencimento)?.isSame(hoje, "month"))
     .reduce((acc, p) => acc + (p.valor_previsto || 0), 0);
 
   const total_recebido_mes = pagamentos
     .filter((p) => {
       if (p.status !== "PAGO" || !p.data_pagamento) return false;
-      return toLocal(p.data_pagamento)?.isSame(hoje, "M");
+      return toLocal(p.data_pagamento)?.isSame(hoje, "month");
     })
     .reduce((acc, p) => acc + (p.valor_pago || 0), 0);
 
   const total_previsto_dia = pagamentos
     .filter(
       (p) =>
-        p.status !== "PAGO" &&
-        toLocal(p.data_vencimento)?.isSame(hoje, "D"),
+        p.status !== "PAGO" && toLocal(p.data_vencimento)?.isSame(hoje, "day"),
     )
     .reduce((acc, p) => acc + (p.valor_previsto || 0), 0);
 
@@ -125,12 +124,14 @@ export default async function caixa({
     .filter((m) => {
       if (m.tipo !== "ENTRADA") return false;
       if (!m.referencia?.startsWith("PAGAMENTO:")) return false;
-      return toLocal(m.data_movimento)?.isSame(hoje, "D");
+      return moment
+        .tz(m.data_movimento.toISOString(), "YYYY-MM-DD HH:mm:ss", "America/Sao_Paulo")
+        .isSame(hoje, "day");
     })
     .reduce((acc, m) => acc + (m.valor || 0), 0);
 
   const total_emprestado_dia = emprestimos
-    .filter((e) => toLocal(e.data_emprestimo)?.isSame(hoje, "D"))
+    .filter((e) => toLocal(e.data_emprestimo)?.isSame(hoje, "day"))
     .reduce((acc, e) => acc + (e.valor_emprestimo || 0), 0);
 
   return {
